@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Session feedback</title><style>
+*,*::before,*::after{box-sizing:border-box}
+html,body,.viewport{width:100%;height:100%;margin:0;overflow:hidden}
+.viewport{position:fixed;inset:0;background:#0b0e14}
+:root{
+ --space-xs:clamp(3px,min(.4vw,.71vh),8px);
+ --space-sm:clamp(5px,min(.7vw,1.24vh),12px);
+ --space-md:clamp(8px,min(1.2vw,2.13vh),20px);
+ --space-lg:clamp(12px,min(2vw,3.56vh),32px);
+ --ink:#eef2f8;--dim:#aab5c9;--line:#232b3a;
+ --amber:#ffb020;--teal:#3ddc97;--violet:#8b7bff;--blue:#5ab0ff;--rose:#ff7a7a;
+ --display:Bahnschrift,"Franklin Gothic Medium","Segoe UI Semibold","Helvetica Neue",Arial,sans-serif;
+ --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+body{font-family:var(--body);color:var(--ink);font-size:clamp(9px,min(1.25vw,2.2vh),17px);line-height:1.3}
+.page{width:100%;min-width:0;height:100%;min-height:0;padding:var(--space-lg);transform-origin:top left;
+ background:radial-gradient(90% 120% at 100% 0%,rgba(255,176,32,.13),transparent 60%),
+  radial-gradient(70% 100% at 0% 100%,rgba(61,220,151,.10),transparent 60%),
+  linear-gradient(160deg,#0b0e14,#0e1320 60%,#0b0e14);
+ display:flex;flex-direction:column;gap:var(--space-sm)}
+h1{font-family:var(--display);font-size:clamp(15px,min(2.7vw,4.8vh),38px);line-height:1;margin:0}
+h2{font-family:var(--display);font-size:clamp(10px,min(1.25vw,2.2vh),17px);line-height:1.1;margin:0;
+ letter-spacing:.09em;text-transform:uppercase;color:#b9c4d8}
+.caption{font-size:clamp(8px,min(.95vw,1.7vh),13px)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;flex:none;
+ border-bottom:1px solid var(--line);padding-bottom:var(--space-xs)}
+.head .sub{color:#b9c4d8;max-width:62ch;font-size:clamp(9px,min(1vw,1.8vh),14px);margin:.25em 0 0}
+.accent{color:var(--amber)}
+.scope{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--amber);
+ font-size:clamp(9px,min(1vw,1.8vh),14px);text-align:right}
+.controls{display:flex;gap:var(--space-sm) var(--space-md);flex-wrap:wrap;align-items:center;flex:none}
+.fgroup{display:flex;align-items:center;gap:var(--space-xs);flex-wrap:wrap;min-width:0}
+.flab{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;color:#8494ad;
+ font-size:clamp(8px,min(.9vw,1.6vh),12px);margin-right:.2em}
+button.chip{font-family:var(--body);font-size:inherit;color:var(--dim);background:#161d2b;border:1px solid var(--line);
+ border-radius:999px;padding:.3em .85em;cursor:pointer;transition:all .18s ease;overflow-wrap:break-word}
+button.chip:hover{color:var(--ink);border-color:#42506b}
+button.chip[aria-checked="true"]{background:var(--amber);border-color:var(--amber);color:#14161c;font-weight:700}
+button.chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+button.chip.clear{margin-left:auto;padding:.32em 1.05em;border-color:var(--teal);color:var(--teal);
+ background:rgba(61,220,151,.08);font-weight:600}
+button.chip.clear:hover{background:var(--teal);color:#0b0e14}
+button.chip.clear[disabled]{cursor:default;border-color:#2f3a4d;color:#8794ab;background:#161d2b}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:var(--space-sm);flex:none}
+.kpi{min-width:0;padding:var(--space-sm) var(--space-md);background:linear-gradient(150deg,#151c2b,#10151f);
+ border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;display:flex;flex-direction:column;gap:.1em}
+.kpi:nth-child(2){border-left-color:var(--teal)}.kpi:nth-child(3){border-left-color:var(--violet)}
+.kpi:nth-child(4){border-left-color:var(--blue)}
+.kpi .v{font-family:var(--display);font-size:clamp(14px,min(2vw,3.6vh),29px);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .l{color:#b9c4d8;letter-spacing:.09em;text-transform:uppercase;font-size:clamp(8px,min(.9vw,1.6vh),12px)}
+.layout{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);gap:var(--space-sm);flex:1;min-height:0}
+.col{display:flex;flex-direction:column;gap:var(--space-sm);min-height:0;min-width:0}
+.panel{min-width:0;min-height:0;overflow:hidden;padding:var(--space-sm) var(--space-md);background:rgba(18,23,35,.72);
+ border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;gap:var(--space-xs)}
+.ptop{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap}
+.mapbox{flex:1;min-height:0}
+.mapbox svg{width:100%;height:100%;display:block}
+.legend{display:flex;gap:var(--space-md);color:#b9c4d8;flex-wrap:wrap;font-size:clamp(9px,min(1vw,1.8vh),13px);align-items:center}
+.legend b{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:.4em;background:var(--amber)}
+.rows{display:flex;flex-direction:column;gap:var(--space-xs);flex:1;min-height:0;justify-content:space-evenly}
+.row{display:grid;grid-template-columns:minmax(0,9.8em) minmax(0,1fr) auto;align-items:center;gap:var(--space-sm);
+ min-width:0;cursor:pointer;transition:opacity .2s ease;background:none;border:0;padding:.1em 0;text-align:left;
+ color:inherit;font:inherit;width:100%}
+.row:hover .n,.row:focus-visible .n{color:#fff}
+.row.dim{opacity:.28}
+.row .n{color:var(--ink);overflow-wrap:break-word}
+.track{display:block;background:#1a2130;border-radius:999px;height:.72em;min-width:0}
+.fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),#2aa5ff);
+ transition:width .5s cubic-bezier(.22,1,.36,1)}
+.rows.alt .fill{background:linear-gradient(90deg,var(--amber),#ff6b6b)}
+.row .val{font-variant-numeric:tabular-nums;color:#b9c4d8;white-space:nowrap}
+.crumb{display:flex;gap:.4em;align-items:center;flex-wrap:wrap;color:#8494ad;font-size:clamp(9px,min(1vw,1.8vh),13px)}
+.crumb button{background:none;border:0;color:var(--teal);cursor:pointer;font:inherit;padding:0 .1em;text-decoration:underline}
+.crumb button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.tooltip{position:fixed;pointer-events:none;z-index:50;background:#0d1320;border:1px solid #3a465e;border-radius:8px;
+ padding:.45em .7em;font-size:clamp(9px,min(1vw,1.8vh),13px);color:var(--ink);box-shadow:0 12px 30px -12px #000;
+ opacity:0;transition:opacity .12s}
+.tooltip.show{opacity:1}
+.empty{color:var(--dim);margin:auto}
+circle.node{cursor:pointer}
+.node-g{transition:opacity .2s ease}
+.dimmed{opacity:.2}
+@media (max-width:900px),(max-aspect-ratio:4/3){.layout{grid-template-columns:1fr}}
+@media (max-height:600px){.page,.panel,.kpi{padding:var(--space-sm)}body{line-height:1.2}}
+@media (forced-colors:active){
+ .page{background:Canvas}.panel,.kpi{background:Canvas;border-color:CanvasText;color:CanvasText}
+ button.chip{background:ButtonFace;color:ButtonText;border-color:ButtonText}
+ button.chip[aria-checked="true"]{background:Highlight;color:HighlightText}
+}
+
+.chip.act{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.10);font-weight:600;margin-left:.2em}
+.chip.act:hover{background:var(--amber);color:#14161c}
+.scroll{overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--space-xs);padding-right:.2em}
+.quote{background:#121824;border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:10px;
+ padding:.45em .7em;font-size:clamp(9px,min(1vw,1.8vh),13.5px);color:#dbe3f0}
+.quote .who{display:block;color:#8494ad;font-size:.85em;margin-top:.25em;letter-spacing:.04em;text-transform:uppercase}
+.rows.imp .quote{border-left-color:var(--amber)}
+.rows.top .quote{border-left-color:var(--violet)}
+.bars{display:flex;align-items:stretch;gap:var(--space-sm);flex:1;min-height:40px;padding-top:.2em}
+.bar{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:.25em;cursor:pointer;
+ background:none;border:0;padding:0;color:inherit;font:inherit}
+.bar .b{display:block;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--blue),#2a6fd6);min-height:3px;
+ transition:height .4s cubic-bezier(.22,1,.36,1)}
+.bar .c{text-align:center;color:#b9c4d8;font-size:clamp(8px,min(.9vw,1.6vh),12px)}
+.bar .t{text-align:center;color:#eef2f8;font-size:clamp(8px,min(.9vw,1.6vh),12px);font-variant-numeric:tabular-nums}
+.bar.dim{opacity:.3}
+.backdrop{position:fixed;inset:0;background:rgba(6,9,14,.72);display:none;align-items:center;justify-content:center;
+ z-index:60;padding:3vh 3vw}
+.backdrop.show{display:flex}
+.modal{width:min(880px,94vw);max-height:92vh;overflow:auto;background:linear-gradient(160deg,#141b29,#0e131d);
+ border:1px solid #2d3a4d;border-radius:18px;padding:clamp(12px,2.2vh,26px) clamp(14px,2.4vw,30px);
+ box-shadow:0 30px 80px -20px #000}
+.modal h3{font-family:var(--display);margin:0 0 .15em;font-size:clamp(14px,min(2.1vw,3.6vh),27px)}
+.modal .lead{color:#b9c4d8;margin:0 0 .8em;font-size:clamp(9px,min(1vw,1.8vh),14px)}
+.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:var(--space-sm)}
+.ins .card{background:#111823;border:1px solid var(--line);border-radius:12px;padding:.65em .85em;
+ border-top:3px solid var(--amber)}
+.ins .card:nth-child(2){border-top-color:var(--teal)}.ins .card:nth-child(3){border-top-color:var(--violet)}
+.ins .card:nth-child(4){border-top-color:var(--blue)}.ins .card:nth-child(5){border-top-color:var(--rose)}
+.ins h4{margin:0 0 .25em;font-family:var(--display);font-size:clamp(10px,min(1.2vw,2.1vh),16px);color:#eef2f8}
+.ins p{margin:0;color:#b9c4d8;font-size:clamp(9px,min(1vw,1.8vh),13.5px)}
+.ins .do{display:block;margin-top:.4em;color:var(--teal);font-size:clamp(9px,min(1vw,1.8vh),13px)}
+.mclose{position:sticky;top:0;float:right;background:#161d2b;border:1px solid var(--line);color:var(--dim);
+ border-radius:999px;cursor:pointer;font:inherit;padding:.2em .8em}
+.mclose:hover{color:#fff;border-color:#42506b}
+</style></head>
+<body><div class="viewport"><div class="page">
+<header class="head">
+ <div><h1>What 277 Attendees Said About <span class="accent">the Sessions</span></h1>
+ <p class="sub">Ratings, time saved and feature demand across four training batches &mdash; click any bar or feature to filter, and open Insights for what to act on.</p></div>
+ <div class="scope">4 batches &middot; 277 responses<br>Avg rating 4.8 / 5</div>
+</header>
+<div class="controls" id="controls"></div>
+<div class="kpis" id="kpis"></div>
+<div class="layout">
+ <div class="col">
+  <section class="panel" style="flex:1.15">
+   <div class="ptop"><h2>Feature demand</h2><span class="caption" style="color:#8494ad">share of responses naming it</span></div>
+   <div class="rows" id="featRows"></div>
+  </section>
+  <section class="panel" style="flex:.85">
+   <div class="ptop"><h2>Time saved per day</h2><span class="caption" style="color:#8494ad">minutes, self-reported</span></div>
+   <div class="bars" id="timeBars"></div>
+  </section>
+ </div>
+ <div class="col">
+  <section class="panel" style="flex:.8">
+   <div class="ptop"><h2>Rating spread</h2><span class="caption" style="color:#8494ad">click to filter</span></div>
+   <div class="bars" id="rateBars"></div>
+  </section>
+  <section class="panel" style="flex:1.45">
+   <div class="ptop"><h2 id="vTitle">In their words</h2><span class="fgroup" id="vTabs"></span></div>
+   <div class="scroll" id="verbatim"></div>
+  </section>
+ </div>
+</div>
+<div class="backdrop" id="backdrop">
+ <div class="modal" role="dialog" aria-modal="true" aria-labelledby="insTitle" id="modal">
+  <button type="button" class="mclose" id="mclose">Close</button>
+  <h3 id="insTitle">Actionable insights</h3>
+  <p class="lead" id="insLead"></p>
+  <div class="ins" id="insBody"></div>
+ </div>
+</div>
+</div></div>
+<script>const DATA=[{"b": "Batch 1", "r": 5, "t": 10.0, "f": ["Excel (general)"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 20.0, "f": [], "l": "Doc is amazing", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 10.0, "f": ["3D Maps"], "l": "Well structured", "i": "More hands-on, more time", "p": "More on excel"}, {"b": "Batch 1", "r": 4, "t": 180.0, "f": ["Excel (general)", "Power BI"], "l": "Hands on and pace", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Power BI", "Power Query"], "l": "Power Query to clean data", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": [], "l": "Eye opener", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Power Query"], "l": "Enlightening", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": [], "l": "Insightful and interactive", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Power BI"], "l": "It is magic", "i": "Microsoft should give free training", "p": "Agents"}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["3D Maps", "Power BI"], "l": "Power BI", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 300.0, "f": ["Power Query"], "l": "Everything", "i": "Advanced application of power query", "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Power BI"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Power BI"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 0.0, "f": ["Power BI"], "l": "Hands-on activities", "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 120.0, "f": ["Sway"], "l": "Delivery", "i": null, "p": "excel"}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["3D Maps", "Power BI"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Power BI"], "l": "Way of teaching", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 20.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 180.0, "f": ["Power BI"], "l": "The hands on approach and support of the professor and AAs", "i": "Group activities", "p": "PowerPoint"}, {"b": "Batch 1", "r": 4, "t": 30.0, "f": ["Excel (general)"], "l": "Power BI introduction", "i": "More structure and flow to the session", "p": "Vlookup"}, {"b": "Batch 1", "r": 4, "t": 45.0, "f": ["Power Query", "Sway"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 240.0, "f": ["Power BI"], "l": "Power query", "i": "More concepts", "p": "VBA"}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Power BI"], "l": "Enlightening", "i": null, "p": null}, {"b": "Batch 1", "r": 3, "t": 180.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["Forms"], "l": "Insightful and interactive", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 20.0, "f": ["3D Maps", "Excel (general)", "Power BI"], "l": "Understanding excel!", "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 60.0, "f": ["Power Query"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 10.0, "f": ["Power BI"], "l": "Cleanup the excel data", "i": "More power BI features", "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Excel (general)"], "l": "Participation level is high", "i": "More hands on experience", "p": "Excel functions"}, {"b": "Batch 1", "r": 3, "t": 60.0, "f": ["Power BI"], "l": null, "i": "More power BI", "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["3D Maps"], "l": "Visualization techniques", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": [], "l": "Data analytics part", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["Power BI"], "l": "Power query was the best part.", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Sway"], "l": "Hands on", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 99.0, "f": ["3D Maps", "Power BI", "Power Query"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["Power BI", "Power Query"], "l": "The application of these concepts", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 180.0, "f": ["Word (general)"], "l": "Hands on", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 80.0, "f": ["Power Query"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 30.0, "f": ["Power BI"], "l": "Power bi and Excel features", "i": "The class was a little bit slow today", "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["3D Maps", "Power BI", "Power Query"], "l": "power query", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 50.0, "f": ["3D Maps", "Power BI"], "l": "Normal paced like how hands on it was", "i": "Nothing as such", "p": "No it will get covered"}, {"b": "Batch 1", "r": 4, "t": 50.0, "f": [], "l": "New features identified", "i": "More on Mac options aswell", "p": "Basics in Excel more that's relevant in workplace"}, {"b": "Batch 1", "r": 5, "t": 70.0, "f": ["Sway"], "l": "Hands on", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 50.0, "f": ["Power BI", "Sway"], "l": null, "i": "It was very fast. Many students weren't able to cope up with the pace and often the students besides get disturbed as they ask for help.", "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Power BI"], "l": "Topics on excel", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 25.0, "f": ["Excel (general)", "Power BI"], "l": "Got time to practice the different new features in class", "i": "More interactive sessions", "p": null}, {"b": "Batch 1", "r": 5, "t": 180.0, "f": ["Power BI", "Power Query"], "l": "It was good overall", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 20.0, "f": ["3D Maps", "Power BI", "Power Query"], "l": "Personalized and paced", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 20.0, "f": ["Power BI"], "l": "Exposure to power BI", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Power Query"], "l": "All of it", "i": "More hands-on maybe", "p": "Footer issues"}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Power BI"], "l": "Maps", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 40.0, "f": ["3D Maps", "Power BI"], "l": "The knowledge gained regarding power BI", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 67.0, "f": ["Power BI"], "l": "Power BI", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["Power BI"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 60.0, "f": ["Power BI", "Sway"], "l": "Sway", "i": null, "p": "Basic other functions of Excel"}, {"b": "Batch 1", "r": 4, "t": 30.0, "f": ["PivotTables"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["3D Maps", "Power Query"], "l": "Hands on", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 30.0, "f": ["Excel (general)"], "l": "Easy to understand", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["3D Maps", "Power Query"], "l": "It will help me in the long run as I'm interested in Data Analytics and I'm just getting started.", "i": "More on Data Analytics if time permits.", "p": "More on PowerBI"}, {"b": "Batch 1", "r": 5, "t": 180.0, "f": ["Power BI", "Sway"], "l": "Waiting till each step is complete", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 180.0, "f": ["Excel (general)", "Power BI"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 90.0, "f": ["Power BI"], "l": "Hands on approach", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 0.0, "f": ["3D Maps"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 45.0, "f": ["Sway"], "l": "The pace was on point", "i": "Perfect today", "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Excel (general)", "Sway"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 45.0, "f": ["Power Query"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": [], "l": "Method of teaching", "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 20.0, "f": ["Power Query"], "l": "Excel explainations", "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 120.0, "f": ["Excel (general)", "Power BI"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 4, "t": 40.0, "f": ["Sway", "Word (general)"], "l": "Creating webpages from word", "i": "Excel basics and short keys", "p": null}, {"b": "Batch 1", "r": 5, "t": null, "f": ["Power Query"], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 1", "r": 5, "t": 60.0, "f": ["Sway"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 10.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 4, "t": 60.0, "f": [], "l": "New insights", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 150.0, "f": [], "l": "Everything", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 20.0, "f": ["Sections", "Table of Contents", "Word to PPT"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 45.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 20.0, "f": ["Sections", "Word Formatting", "Word to PPT"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 4, "t": 60.0, "f": [], "l": "Tools are there to make our lives better", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 100.0, "f": ["Sections", "Word to PPT"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["Designer", "Word Formatting"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": [], "l": "Teaching skills , lots of new learnings", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "Got to learn new features", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Designer", "Word (general)"], "l": "Pace", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Sections"], "l": "The time given to grasp the fearures", "i": "It the best already", "p": "More about power point"}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Forms", "Table of Contents"], "l": "Teaching style -Practical and Live", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Table of Contents", "Word to PPT"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 4, "t": 60.0, "f": ["Word (general)", "Word to PPT"], "l": "The exciting flow", "i": null, "p": "Other lesser knows apps of Microsoft that might be useful."}, {"b": "Batch 3", "r": 5, "t": 40.0, "f": ["Word (general)"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "Amazing interaction", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "The efficient ways of working on microsoft", "i": "A little more practice", "p": "Word and ppt and excel"}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["PowerPoint (general)", "Word (general)"], "l": "The instructor\u2019s way of teaching", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Word (general)"], "l": "Free flowing", "i": "Nothing as of now", "p": "Details of power point"}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["PowerPoint (general)"], "l": "The hands on approach", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 90.0, "f": ["Designer", "Forms"], "l": "Hands on trial of the concepts learned, relevant topics covered", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "The practicality aspect. Easy tricks to be efficient", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": [], "l": "It transformed my knowledge of using windows apps", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["PowerPoint (general)", "Stock Images & Icons"], "l": "It was fun, interactive and extremely eye opening", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 20.0, "f": ["Designer", "Word to PPT"], "l": "To the point, many tips and tricks in just 3 hours", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Table of Contents", "Word Formatting"], "l": "Interactive, easy to follow and clear understanding", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["PowerPoint (general)"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 100.0, "f": ["Word to PPT"], "l": "Pace and style of instructor", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Forms", "PowerPoint (general)", "Stock Images & Icons"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "Learned about very useful features that I didn't notice before", "i": null, "p": "Using AI for ppts more in depth"}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Designer", "Word (general)"], "l": "Easy to follow instructions", "i": null, "p": "More in power point"}, {"b": "Batch 3", "r": 5, "t": 180.0, "f": ["Word to PPT"], "l": "Let word do the work, you don't do the work for word", "i": "The session should've been spaced out across one week instead of just 4 days", "p": "VBA"}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["Word to PPT"], "l": "Explored unknown features of office tools", "i": "The pace could be a bit slow", "p": null}, {"b": "Batch 3", "r": 5, "t": 240.0, "f": ["PowerPoint (general)"], "l": "everything", "i": "This should be at the beginning of the course", "p": null}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Forms", "Word to PPT"], "l": "Topics that are present, that we were not aware", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 180.0, "f": ["Designer", "Word Formatting", "Word to PPT"], "l": "Practical approach", "i": null, "p": "Power BI, Sway"}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Designer", "Sections"], "l": "Everything", "i": "Slower pace", "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Designer", "Forms"], "l": "Interactive aspect , doubt clearing", "i": "More practice", "p": "More details on formatting presentation"}, {"b": "Batch 3", "r": 5, "t": 20.0, "f": [], "l": "The teaching method of showing how we do things inefficiently and then teaching the right way", "i": null, "p": "More on Excel"}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Word to PPT"], "l": "Doc's delivery and pace", "i": "Video based learning", "p": "More PowerPoint shortcuts"}, {"b": "Batch 3", "r": 5, "t": 90.0, "f": ["Designer", "Forms", "Sections"], "l": "Learning with ease", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 40.0, "f": ["PowerPoint (general)", "Word (general)"], "l": "communication, tips and tricks", "i": "Can go slightly slow", "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": [], "l": "It was very informative, explained in an easy language, practice between the session helped a lot and prof is very interactive and friendly.", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Designer", "Word (general)", "Word to PPT"], "l": "The DIY aspect of the session", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["Designer"], "l": "The features were visible but none of us knew where to look and even think of applying them. This session made us more aware", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["Designer", "Sections", "Word to PPT"], "l": "Helps me save time and effort in real life", "i": null, "p": "How to creat better power points fasters. Please also cover excel productivity tips and tricks beyond the usual 7 formulas such as how to create dashboards."}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["PowerPoint (general)"], "l": "The interactive way of teaching.", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 45.0, "f": ["Forms", "Word (general)", "Word to PPT"], "l": "Engaging with ample time to practice ourselves and the class started from the basics", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 80.0, "f": ["Forms"], "l": "The live implementation of the learnings", "i": "Increase the number of sessions to maximize learnings", "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Table of Contents", "Word to PPT"], "l": "Mind-Blowing", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 0.0, "f": ["Sections", "Word (general)"], "l": "Excellent tips", "i": "More practice", "p": null}, {"b": "Batch 3", "r": 5, "t": 70.0, "f": ["Sections", "Word Formatting", "Word to PPT"], "l": "The sessions cover all the necessary commands/ features. The demonstration is crisp and to the point", "i": null, "p": null}, {"b": "Batch 3", "r": 4, "t": 30.0, "f": [], "l": "The process of discovering new features", "i": "To go a little slow at the end.", "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["Sections", "Word Formatting", "Word to PPT"], "l": "It made task easier and more efficient.", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["PowerPoint (general)", "Stock Images & Icons", "Word Formatting"], "l": "Easy to follow, professor is really chill", "i": "College should have assigned this session in the first block.", "p": "Yet to know"}, {"b": "Batch 3", "r": 5, "t": 60.0, "f": ["PowerPoint (general)", "Sections"], "l": "questioning our ways at doing things", "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 240.0, "f": ["Word to PPT"], "l": "Practical explanation and demonstration of tasks that can be done so much more efficiently and quickly", "i": "The pace can be a bit more slow.", "p": "How to make PPTs quickly, How to make more efficient word docs."}, {"b": "Batch 3", "r": 5, "t": 90.0, "f": ["Designer", "Word Formatting"], "l": "Nobody till now ever gave us a perspective of using these apps from a user perspective. This session will help us build efficiency.", "i": "We can have more interactive session.", "p": "How to use canva"}, {"b": "Batch 3", "r": 4, "t": 30.0, "f": ["Forms", "Sections", "Word (general)"], "l": "Content", "i": "Give a bit more time to practice what has been taught.", "p": null}, {"b": "Batch 3", "r": 5, "t": 130.0, "f": ["Word (general)", "Word to PPT"], "l": "Very informative and useful.", "i": "More examples and interactions and some extra exercises.", "p": "Connecting all apps in office, including planner and calendar."}, {"b": "Batch 3", "r": 5, "t": 120.0, "f": ["Word to PPT"], "l": null, "i": null, "p": null}, {"b": "Batch 3", "r": 5, "t": 30.0, "f": ["Designer", "Forms"], "l": "The profs beard is too cool", "i": "Instructions could be repeated, or a highlight phrase could be used before the instruction such as 'guys, pay attention '", "p": "AI PPt to text, generating basic reports from graphs and pics."}, {"b": "Batch 3", "r": 5, "t": null, "f": ["PowerPoint (general)"], "l": "Efficiency to save our time", "i": "Little content everyday otherwise it becomes to much information to process in one dat", "p": "Apart from what is being taught , nothing as such"}, {"b": "Batch 3", "r": 3, "t": 60.0, "f": ["Designer"], "l": "Simple solutions are suddenly visible now..", "i": "It might be a me problem, but since I'm a fresher.. My usage of particular platforms is less and therefore less familiarity. Pace is a little fast at some point.. Not all along.. And also I'm a Mac user, so I end up needing more time to find the feature in my ", "p": null}, {"b": "Batch 3", "r": 5, "t": 50.0, "f": ["Word to PPT"], "l": "The hands on experience gives us a great learning experience", "i": "A little slow pace", "p": "Recordings in word"}, {"b": "Batch 3", "r": 5, "t": 300.0, "f": ["Forms", "Word (general)", "Word to PPT"], "l": "Detailed explanation", "i": "Great session", "p": null}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Morph"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 10.0, "f": ["Teams & Loop"], "l": "Whiteboard", "i": "Great one", "p": "Excel"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Excel (general)"], "l": "Way of teaching", "i": null, "p": null}, {"b": "Batch 2", "r": 3, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 128.0, "f": ["Teams & Loop"], "l": "Ms Teams", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 10.0, "f": ["Teams & Loop", "Whiteboard"], "l": "Teams collaboration", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 30.0, "f": ["OneDrive"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Word (general)"], "l": "Word related tips", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 80.0, "f": [], "l": "Teaching method", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 10.0, "f": ["Morph"], "l": "Hands on experience", "i": "Power BI session", "p": null}, {"b": "Batch 2", "r": 4, "t": 0.0, "f": ["Teams & Loop"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": ["Teams & Loop"], "l": "Hands on", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": [], "l": "Hands on", "i": "It was great", "p": "More about excel"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["PowerPoint (general)", "Teams & Loop"], "l": "Hands on and well paced", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 180.0, "f": ["Outlook", "Teams & Loop"], "l": "Nice features", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 30.0, "f": ["Morph", "Teams & Loop"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 60.0, "f": ["Teams & Loop"], "l": null, "i": "Pace was little slow today", "p": "One Note"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Teams & Loop"], "l": "The pace was good", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 30.0, "f": ["Teams & Loop"], "l": "It had hands on approach", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 45.0, "f": ["Teams & Loop"], "l": "Teams features", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 15.0, "f": ["Teams & Loop", "Word (general)"], "l": "Ease of understanding", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": ["Morph"], "l": "These things can be applied on a day to day basis", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 40.0, "f": [], "l": "Amazing tricks", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 240.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 0.0, "f": ["Morph", "Teams & Loop"], "l": "Hands-on exercise", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 30.0, "f": ["Outlook", "Teams & Loop"], "l": "Usage of office collaboration", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["OneDrive", "Teams & Loop"], "l": "Using one drive", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Teams & Loop"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Teams & Loop"], "l": "Correctly paced", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 30.0, "f": ["Teams & Loop"], "l": "Was at a good pace in the second half", "i": "A little less Handson", "p": "More use of outlook and excel"}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": ["Morph", "Teams & Loop", "Whiteboard"], "l": "How well paced it was and how much we managed to cover", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Morph", "OneDrive"], "l": "Packed with good content.", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Outlook"], "l": "The hands on approach", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Teams & Loop"], "l": "The pace and attention to detail", "i": "Good", "p": null}, {"b": "Batch 2", "r": 5, "t": 50.0, "f": ["Word (general)"], "l": "It was very elaborate and informative", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 180.0, "f": ["OneDrive", "Teams & Loop"], "l": "Today's session was very relatable", "i": "Group activities", "p": "Excel"}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": ["Teams & Loop"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 240.0, "f": ["Morph"], "l": "The hands on experience", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 400.0, "f": ["OneDrive"], "l": "Interactive session", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 15.0, "f": [], "l": "Morphing in PPT", "i": null, "p": "Power BI"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Teams & Loop"], "l": "Ease and time to practice", "i": null, "p": "All were fine"}, {"b": "Batch 2", "r": 5, "t": 80.0, "f": ["Morph", "Teams & Loop", "Whiteboard"], "l": "Hands-on along with teaching", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["PowerPoint (general)"], "l": "no one has taught us all this in so much detail", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 30.0, "f": ["Morph", "Teams & Loop"], "l": "Got time to practice the features", "i": "The speed of the session can increase", "p": "Power BI"}, {"b": "Batch 2", "r": 4, "t": 120.0, "f": ["Morph", "Teams & Loop"], "l": "focus in ppt and word", "i": "focus on excel and word more", "p": "MS office mainly, tableu"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Morph"], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Morph"], "l": "Teams usage and PPT hacks", "i": "No issues", "p": "Excel hacks"}, {"b": "Batch 2", "r": 5, "t": 80.0, "f": ["Teams & Loop", "Whiteboard"], "l": "Whiteboard and collaborative work on docs", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 240.0, "f": ["Teams & Loop"], "l": "Use of teams and outlook", "i": "More features", "p": "Teams collaborations"}, {"b": "Batch 2", "r": 4, "t": 30.0, "f": ["Teams & Loop"], "l": "Hands on", "i": null, "p": "Outlook"}, {"b": "Batch 2", "r": 4, "t": 300.0, "f": ["Teams & Loop"], "l": null, "i": "Was a bit fast", "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Teams & Loop"], "l": "Hands on was the best", "i": "Sway Session", "p": "How to use Sway"}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["PowerPoint (general)", "Teams & Loop", "Word (general)"], "l": "The hidden features", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 0.0, "f": ["Morph", "Teams & Loop", "Word Formatting"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 2", "r": 4, "t": 15.0, "f": ["PowerPoint (general)", "Teams & Loop"], "l": null, "i": "Would prefer to cover more things in the session rather than hands on", "p": null}, {"b": "Batch 2", "r": 4, "t": 90.0, "f": ["Forms"], "l": "Easy and concise", "i": null, "p": "Ms excel"}, {"b": "Batch 2", "r": 4, "t": 20.0, "f": ["Teams & Loop"], "l": "Everything", "i": "It was slow today", "p": "Visio in more detail"}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["OneDrive", "Teams & Loop", "Word (general)"], "l": "Entire session was very fruitful, learnt a lot about teams", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 20.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 50.0, "f": ["Teams & Loop"], "l": "Interesting ways to explore 365", "i": "More on Power point tricks and tips", "p": "Easy animations"}, {"b": "Batch 2", "r": 5, "t": 72.0, "f": [], "l": "Hands on approach! Thankyou for today! Especially the fact that you provided data set in advance for us to practice on it! Thanks once again.", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 30.0, "f": [], "l": "The way the session is conducted is very structured and not too formal, which creates a good classroom environment", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": ["Teams & Loop"], "l": "Reinforcing of concepts with hands on", "i": null, "p": "Power BI"}, {"b": "Batch 2", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 45.0, "f": ["Whiteboard"], "l": "More hands on but a bit too hands on", "i": "Doubts about yesterday's session in the first half hour. Teach in class and ask to practice at home. We can cover more stuff that way", "p": null}, {"b": "Batch 2", "r": 5, "t": 90.0, "f": ["Teams & Loop", "Whiteboard"], "l": "Tips, tricks and the direct approach. practical orientated session", "i": null, "p": "One Note"}, {"b": "Batch 2", "r": 5, "t": 100.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 60.0, "f": ["Teams & Loop", "Word (general)"], "l": "Effectively using the tools", "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": 50.0, "f": ["PowerPoint (general)"], "l": "How Doc went around the classroom and made students understand the problem they were facing", "i": "Nothing as such", "p": "I think everything will be covered."}, {"b": "Batch 2", "r": 5, "t": 180.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 2", "r": 5, "t": null, "f": ["Teams & Loop"], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 15.0, "f": ["Visio"], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": [], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 0.0, "f": ["Morph"], "l": null, "i": null, "p": "Power BI"}, {"b": "Batch 4", "r": 4, "t": 30.0, "f": [], "l": null, "i": null, "p": "Power BI"}, {"b": "Batch 4", "r": 4, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": ["PowerPoint (general)"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 45.0, "f": [], "l": "The animation and transitions", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": "Ppt features", "i": "Slow pace", "p": null}, {"b": "Batch 4", "r": 4, "t": 120.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": ["Morph"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 40.0, "f": ["Morph"], "l": "Ppt skills + visio", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 50.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": ["Morph", "PowerPoint (general)"], "l": "PPT skills", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 50.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": "Lot of practical applications", "i": "It's fast", "p": null}, {"b": "Batch 4", "r": 5, "t": 240.0, "f": ["Morph"], "l": "The visual representation of all the effective features", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 40.0, "f": ["PowerPoint (general)"], "l": "Interactive", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 40.0, "f": [], "l": null, "i": "It was a little fast", "p": "Copilot"}, {"b": "Batch 4", "r": 5, "t": 75.0, "f": ["OneDrive"], "l": null, "i": null, "p": "Copilot"}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": "Copilot"}, {"b": "Batch 4", "r": 5, "t": 40.0, "f": ["OneDrive", "Teams & Loop"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": ["Morph", "OneDrive"], "l": "All", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 10.0, "f": ["Morph"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 20.0, "f": ["Morph"], "l": "Ppt shortcuts and features", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 90.0, "f": ["OneDrive", "PowerPoint (general)", "Visio"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": ["PowerPoint (general)"], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": ["Outlook"], "l": "It was very informative", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 20.0, "f": ["Morph"], "l": "efficiency", "i": null, "p": "None as of now"}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": "Everything", "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 50.0, "f": [], "l": "The translation part was the most eye opening", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 120.0, "f": [], "l": null, "i": "Too many things covered together, everything\u2019s a little messed up", "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": "Informative", "i": "Too fast, not enough time to practice", "p": null}, {"b": "Batch 4", "r": 5, "t": 50.0, "f": ["OneDrive", "PowerPoint (general)"], "l": "Practicality and shortcuts", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 50.0, "f": ["PowerPoint (general)", "Word (general)"], "l": "It was nice", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 40.0, "f": ["Visio"], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 20.0, "f": [], "l": "The features of powerpoint and one drive", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": [], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 60.0, "f": ["Teams & Loop"], "l": "Everything", "i": null, "p": "Excel"}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": ["Excel (general)", "Teams & Loop", "Visio"], "l": "Everything", "i": null, "p": "Outlook hacks"}, {"b": "Batch 4", "r": 3, "t": 60.0, "f": [], "l": null, "i": "Little slower for pace", "p": null}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": [], "l": "Used 'guys this is important' phrase before launching into new things", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": ["PowerPoint (general)", "Sway"], "l": "Knowing the unknown", "i": "_", "p": null}, {"b": "Batch 4", "r": 5, "t": 30.0, "f": ["Morph"], "l": "One Drive", "i": null, "p": "Covered"}, {"b": "Batch 4", "r": 5, "t": 300.0, "f": ["Morph", "OneDrive"], "l": "Great session", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": [], "l": "Presentation", "i": null, "p": null}, {"b": "Batch 4", "r": 4, "t": 30.0, "f": ["Visio"], "l": "All unexplored options", "i": "Too much content. couldn't absorb even 10% of it.", "p": null}, {"b": "Batch 4", "r": 5, "t": 15.0, "f": ["Morph", "Sway", "Visio"], "l": "Hands on approach", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 120.0, "f": ["Visio"], "l": "Input", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 240.0, "f": ["Morph"], "l": "Very lucid and simple, user friendly language", "i": "It's too fast", "p": "Tableau"}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": ["PowerPoint (general)"], "l": "The way we can create smart art charts", "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 45.0, "f": ["PowerPoint (general)", "Sway", "Visio"], "l": null, "i": null, "p": null}, {"b": "Batch 4", "r": 5, "t": 60.0, "f": ["OneDrive", "PowerPoint (general)"], "l": null, "i": "Please share a document covering the steps to follow.", "p": null}];
+
+const BATCHES=["Batch 1","Batch 2","Batch 3","Batch 4"];
+let BATCH="All", RATING=null, FEAT=null, VIEW="l";
+const FEATS=(()=>{const c={};DATA.forEach(d=>d.f.forEach(f=>c[f]=(c[f]||0)+1));
+ return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(e=>e[0])})();
+
+function rows(){return DATA.filter(d=>{
+ if(BATCH!=="All"&&d.b!==BATCH)return false;
+ if(RATING&&d.r!==RATING)return false;
+ if(FEAT&&!d.f.includes(FEAT))return false;
+ return true})}
+function avg(a){return a.length?a.reduce((s,x)=>s+x,0)/a.length:0}
+
+const TIP=document.createElement("div");TIP.className="tooltip";TIP.setAttribute("role","status");document.body.appendChild(TIP);
+function tipShow(h,x,y){TIP.innerHTML=h;TIP.classList.add("show");const r=TIP.getBoundingClientRect();
+ TIP.style.left=Math.min(window.innerWidth-r.width-8,Math.max(8,x+14))+"px";
+ TIP.style.top=Math.max(8,y-r.height-12)+"px"}
+function tipHide(){TIP.classList.remove("show")}
+function bindTip(el,fn){el.addEventListener("mousemove",e=>tipShow(fn(),e.clientX,e.clientY));
+ el.addEventListener("mouseleave",tipHide);
+ el.addEventListener("focus",()=>{const r=el.getBoundingClientRect();tipShow(fn(),r.left,r.bottom+r.height)});
+ el.addEventListener("blur",tipHide)}
+document.addEventListener("keydown",e=>{if(e.key==="Control")tipHide()});
+
+function pillGroup(host,label,items,get,set){
+ const box=document.createElement("div");box.className="fgroup";box.setAttribute("role","radiogroup");
+ box.setAttribute("aria-label",label);box.dataset.g=label;
+ const l=document.createElement("span");l.className="flab";l.textContent=label;box.appendChild(l);
+ items.forEach(([v,t],i)=>{const b=document.createElement("button");b.type="button";b.className="chip";
+  b.setAttribute("role","radio");b.dataset.v=v;b.setAttribute("aria-posinset",String(i+1));
+  b.setAttribute("aria-setsize",String(items.length));b.setAttribute("aria-checked",String(String(get())===v));
+  b.textContent=t;
+  b.addEventListener("click",()=>{set(v);
+   [...box.querySelectorAll("button")].forEach(x=>x.setAttribute("aria-checked",String(x.dataset.v===String(get()))));
+   render()});
+  box.appendChild(b)});
+ host.appendChild(box)}
+
+const ctl=document.getElementById("controls");
+pillGroup(ctl,"Batch",[["All","All"]].concat(BATCHES.map(b=>[b,b.replace("Batch ","B")])),()=>BATCH,v=>{BATCH=v});
+const fsel=document.createElement("div");fsel.className="fgroup";
+fsel.innerHTML='<span class="flab">Feature</span>';
+const sel=document.createElement("select");sel.setAttribute("aria-label","Feature");
+sel.innerHTML='<option value="">All features</option>'+FEATS.map(f=>'<option value="'+f+'">'+f+'</option>').join("");
+sel.addEventListener("change",()=>{FEAT=sel.value||null;sel.classList.toggle("on",!!FEAT);render()});
+fsel.appendChild(sel);ctl.appendChild(fsel);
+const insBtn=document.createElement("button");insBtn.type="button";insBtn.className="chip act";
+insBtn.textContent="Insights";insBtn.setAttribute("aria-haspopup","dialog");
+ctl.appendChild(insBtn);
+const clearBtn=document.createElement("button");clearBtn.type="button";clearBtn.className="chip clear";
+clearBtn.textContent="Clear all filters";
+clearBtn.addEventListener("click",()=>{BATCH="All";RATING=null;FEAT=null;sel.value="";sel.classList.remove("on");
+ ctl.querySelectorAll('[role="radiogroup"]').forEach(g=>{
+  [...g.querySelectorAll("button")].forEach((x,j)=>x.setAttribute("aria-checked",String(j===0)))});
+ render()});
+ctl.appendChild(clearBtn);
+function active(){return BATCH!=="All"||RATING!==null||FEAT!==null}
+
+function barChart(host,items,color,onClick,activeKey,fmt){
+ const max=Math.max(1,...items.map(i=>i[1]));
+ host.innerHTML="";
+ items.forEach(([k,v,lab])=>{
+  const b=document.createElement("button");b.type="button";b.className="bar";
+  b.setAttribute("aria-label",(lab||k)+": "+v+" responses");
+  b.innerHTML='<span class="t">'+(fmt?fmt(v):v)+'</span><span class="b" style="height:'
+   +Math.max(3,v/max*100)+'%;background:linear-gradient(180deg,'+color[0]+','+color[1]+')"></span>'
+   +'<span class="c">'+(lab||k)+'</span>';
+  if(activeKey!==null&&activeKey!==undefined&&String(activeKey)!==String(k))b.classList.add("dim");
+  bindTip(b,()=>'<b>'+(lab||k)+'</b><br>'+v+' responses ('+Math.round(v/Math.max(1,items.reduce((s,i)=>s+i[1],0))*100)+'%)');
+  if(onClick)b.addEventListener("click",()=>onClick(k));
+  host.appendChild(b)})}
+
+function featRows(rs){
+ const c={};rs.forEach(d=>d.f.forEach(f=>c[f]=(c[f]||0)+1));
+ const list=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,7);
+ const host=document.getElementById("featRows");
+ if(!list.length){host.innerHTML='<div class="empty caption">No features named in this selection.</div>';return}
+ const max=list[0][1];host.innerHTML="";
+ list.forEach(([f,n],i)=>{
+  const b=document.createElement("button");b.type="button";b.className="row";
+  b.setAttribute("aria-posinset",String(i+1));b.setAttribute("aria-setsize",String(list.length));
+  b.innerHTML='<span class="n">'+f+'</span><span class="track"><span class="fill" style="width:'
+   +Math.max(4,n/max*100)+'%"></span></span><span class="val">'+n+'</span>';
+  if(FEAT&&FEAT!==f)b.classList.add("dim");
+  bindTip(b,()=>'<b>'+f+'</b><br>named by '+n+' of '+rs.length+' responses ('+Math.round(n/rs.length*100)+'%)');
+  b.addEventListener("click",()=>{FEAT=FEAT===f?null:f;sel.value=FEAT||"";sel.classList.toggle("on",!!FEAT);render()});
+  host.appendChild(b)})}
+
+const TB=[[0,30,"≤30"],[31,60,"31–60"],[61,120,"61–120"],[121,240,"121–240"],[241,1000,"240+"]];
+function verbatim(rs){
+ const host=document.getElementById("verbatim");
+ const key=VIEW;
+ const items=rs.filter(d=>d[key]).map(d=>[d[key],d.b,d.r]);
+ document.getElementById("vTitle").textContent=key==="l"?"What they liked":key==="i"?"What to improve":"Topics requested";
+ host.className="scroll rows "+(key==="i"?"imp":key==="p"?"top":"");
+ if(!items.length){host.innerHTML='<div class="empty caption">No comments in this selection.</div>';return}
+ host.innerHTML=items.slice(0,60).map(([t,b,r])=>
+  '<div class="quote">'+t.replace(/[<>]/g,"")+'<span class="who">'+b+(r?" · "+r+"★":"")+'</span></div>').join("")}
+
+function render(){
+ const rs=rows();
+ const rts=rs.map(d=>d.r).filter(Boolean), tms=rs.map(d=>d.t).filter(Boolean);
+ const five=rts.filter(r=>r===5).length;
+ const mins=avg(tms);
+ document.getElementById("kpis").innerHTML=[
+  ["Responses",String(rs.length)],
+  ["Avg rating",rts.length?avg(rts).toFixed(2):"—"],
+  ["5-star",rts.length?Math.round(five/rts.length*100)+"%":"—"],
+  ["Time saved / day",tms.length?Math.round(mins)+" min":"—"],
+  ["Hours / month",tms.length?(mins*22/60).toFixed(1):"—"]
+ ].map(c=>'<div class="kpi"><div class="v">'+c[1]+'</div><div class="l">'+c[0]+'</div></div>').join("");
+
+ barChart(document.getElementById("rateBars"),
+  [3,4,5].map(r=>[r,rs.filter(d=>d.r===r).length,r+"★"]),["#3ddc97","#1f8f66"],
+  k=>{RATING=RATING===k?null:k;render()},RATING);
+
+ barChart(document.getElementById("timeBars"),
+  TB.map(([lo,hi,lab])=>[lab,rs.filter(d=>d.t>=lo&&d.t<=hi).length,lab]),["#5ab0ff","#2a6fd6"],null,null);
+
+ featRows(rs);
+ verbatim(rs);
+ clearBtn.disabled=!active();clearBtn.setAttribute("aria-disabled",String(!active()));
+ scheduleFit()}
+
+/* verbatim tabs */
+const vt=document.getElementById("vTabs");
+[["l","Liked"],["i","Improve"],["p","Topics"]].forEach(([v,t],i)=>{
+ const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("role","radio");
+ b.dataset.v=v;b.setAttribute("aria-checked",String(VIEW===v));b.textContent=t;
+ b.addEventListener("click",()=>{VIEW=v;
+  [...vt.querySelectorAll("button")].forEach(x=>x.setAttribute("aria-checked",String(x.dataset.v===VIEW)));
+  render()});
+ vt.appendChild(b)});
+vt.setAttribute("role","radiogroup");vt.setAttribute("aria-label","Comment type");
+
+/* insights */
+function insights(){
+ const rs=rows();
+ const scope=(BATCH==="All"?"All four batches":BATCH)+(FEAT?" · "+FEAT:"")+(RATING?" · "+RATING+"★ only":"");
+ const rts=rs.map(d=>d.r).filter(Boolean), tms=rs.map(d=>d.t).filter(Boolean);
+ const mins=avg(tms), five=rts.filter(r=>r===5).length/Math.max(1,rts.length)*100;
+ const c={};rs.forEach(d=>d.f.forEach(f=>c[f]=(c[f]||0)+1));
+ const top=Object.entries(c).sort((a,b)=>b[1]-a[1]);
+ const named=rs.filter(d=>d.f.length).length;
+ const impN=rs.filter(d=>d.i).length, topN=rs.filter(d=>d.p).length;
+ const byBatch=BATCHES.map(b=>{const g=DATA.filter(d=>d.b===b);
+  return [b,avg(g.map(d=>d.r).filter(Boolean)),avg(g.map(d=>d.t).filter(Boolean)),g.length]});
+ const best=byBatch.slice().sort((a,b)=>b[1]-a[1])[0], worst=byBatch.slice().sort((a,b)=>a[1]-b[1])[0];
+ const cards=[
+  ["Lead with the three features they actually want",
+   (top[0]?top[0][0]+", "+(top[1]?top[1][0]:"")+" and "+(top[2]?top[2][0]:"")+" account for the largest share of "+named+" responses that named a feature.":"Too few responses name a feature in this selection."),
+   "Open the next session with these three and demo them hands-on rather than in passing."],
+  ["The time-saving claim is your strongest number",
+   "Attendees report saving "+Math.round(mins)+" minutes a day on average — about "+(mins*22/60).toFixed(1)+" hours a month, or roughly "+Math.round(mins*22*12/60)+" hours a year per person.",
+   "Put this figure in the invite and the post-session summary to justify wider rollout."],
+  ["Satisfaction is near the ceiling — stop optimising it",
+   Math.round(five)+"% rate the session 5 out of 5 and the average is "+ (rts.length?avg(rts).toFixed(2):"—")+" out of 5. There is almost no headroom left in the score.",
+   "Shift the measurement from satisfaction to adoption: survey the same people 30 days later on what they actually used."],
+  ["Hands-on time is the recurring ask",
+   impN+" responses left an improvement suggestion and "+topN+" asked for specific topics. The dominant themes are more hands-on practice, more time, and deeper Excel and Power Query content.",
+   "Convert 20 minutes of demo into a guided exercise, and schedule a follow-up advanced Excel and Power Query session."],
+  ["Batch quality is consistent — the format travels",
+   "Ratings run from "+worst[1].toFixed(2)+" ("+worst[0]+") to "+best[1].toFixed(2)+" ("+best[0]+"), a spread of just "+(best[1]-worst[1]).toFixed(2)+" points across "+DATA.length+" responses.",
+   "The format is repeatable as-is; scale by adding batches rather than redesigning the content."],
+  ["A third of responses skip the feature question",
+   (DATA.length-DATA.filter(d=>d.f.length).length)+" of "+DATA.length+" left the feature field blank or vague, so demand data is thinner than the ratings.",
+   "Replace the free-text field with a checklist of the features actually demoed to get clean demand data next time."]
+ ];
+ document.getElementById("insLead").textContent=scope+" · "+rs.length+" responses in view";
+ document.getElementById("insBody").innerHTML=cards.map(c=>
+  '<div class="card"><h4>'+c[0]+'</h4><p>'+c[1]+'<span class="do">→ '+c[2]+'</span></p></div>').join("")}
+
+const back=document.getElementById("backdrop");
+let lastFocus=null;
+function openIns(){insights();back.classList.add("show");lastFocus=document.activeElement;
+ document.getElementById("mclose").focus()}
+function closeIns(){back.classList.remove("show");if(lastFocus)lastFocus.focus()}
+insBtn.addEventListener("click",openIns);
+document.getElementById("mclose").addEventListener("click",closeIns);
+back.addEventListener("click",e=>{if(e.target===back)closeIns()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&back.classList.contains("show"))closeIns()});
+
+/* fit */
+const viewport=document.querySelector(".viewport"),page=document.querySelector(".page");
+function contentHeight(){const t=page.getBoundingClientRect().top;let b=t+page.scrollHeight;
+ page.querySelectorAll("*").forEach(e=>{if(e.matches(".tooltip")||e.closest(".backdrop")||e.matches(".scroll")||e.closest(".scroll"))return;
+  b=Math.max(b,e.getBoundingClientRect().bottom)});return b-t}
+function fitPage(){const vw=viewport.clientWidth,vh=viewport.clientHeight;page.style.transform="none";page.style.width=vw+"px";
+ if(contentHeight()<=vh){page.style.width="100%";return}
+ let lo=0.2,hi=1;
+ for(let i=0;i<12;i++){const s=(lo+hi)/2;page.style.width=(vw/s)+"px";if(contentHeight()*s<=vh){lo=s}else{hi=s}}
+ page.style.width=(vw/lo)+"px";page.style.transform="scale("+lo+")"}
+let ff;function scheduleFit(){cancelAnimationFrame(ff);ff=requestAnimationFrame(fitPage)}
+new ResizeObserver(scheduleFit).observe(viewport);
+window.addEventListener("load",scheduleFit);window.addEventListener("resize",scheduleFit);
+if(document.fonts)document.fonts.ready.then(scheduleFit);
+render();
+</script></body></html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>How the Year Is Tracking</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body,.viewport{width:100%;height:100%;margin:0;overflow:hidden}
+.viewport{position:fixed;inset:0;background:#0b0e14}
+:root{
+ --space-xs:clamp(3px,min(.4vw,.71vh),8px);
+ --space-sm:clamp(5px,min(.7vw,1.24vh),12px);
+ --space-md:clamp(8px,min(1.2vw,2.13vh),20px);
+ --space-lg:clamp(12px,min(2vw,3.56vh),32px);
+ --ink:#eef2f8;--dim:#aab5c9;--line:#232b3a;
+ --amber:#ffb020;--teal:#3ddc97;--violet:#8b7bff;--blue:#5ab0ff;--rose:#ff7a7a;
+ --display:Bahnschrift,"Franklin Gothic Medium","Segoe UI Semibold","Helvetica Neue",Arial,sans-serif;
+ --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+body{font-family:var(--body);color:var(--ink);font-size:clamp(9px,min(1.25vw,2.2vh),17px);line-height:1.3}
+.page{width:100%;min-width:0;height:100%;min-height:0;max-width:none;margin:0;padding:var(--space-lg);transform-origin:top left;
+ background:radial-gradient(90% 120% at 100% 0%,rgba(255,176,32,.13),transparent 60%),
+  radial-gradient(70% 100% at 0% 100%,rgba(61,220,151,.10),transparent 60%),
+  linear-gradient(160deg,#0b0e14,#0e1320 60%,#0b0e14);
+ display:flex;flex-direction:column;gap:var(--space-sm)}
+h1{font-family:var(--display);font-size:clamp(15px,min(2.7vw,4.8vh),38px);line-height:1;margin:0}
+h2{font-family:var(--display);font-size:clamp(10px,min(1.25vw,2.2vh),17px);line-height:1.1;margin:0;letter-spacing:.09em;text-transform:uppercase;color:#b9c4d8}
+small,.caption{font-size:clamp(8px,min(.95vw,1.7vh),13px)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;flex:none;
+ border-bottom:1px solid var(--line);padding-bottom:var(--space-xs)}
+.head .sub{color:#b9c4d8;max-width:60ch;font-size:clamp(9px,min(1vw,1.8vh),14px)}
+.accent{color:var(--amber)}
+.scope{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--amber);font-size:clamp(9px,min(1vw,1.8vh),14px);text-align:right}
+.controls{display:flex;gap:var(--space-sm) var(--space-md);flex-wrap:wrap;align-items:center;flex:none}
+.fgroup{display:flex;align-items:center;gap:var(--space-xs);flex-wrap:wrap;min-width:0}
+.flab{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;color:#8494ad;font-size:clamp(8px,min(.9vw,1.6vh),12px);margin-right:.2em}
+button.chip{font-family:var(--body);font-size:inherit;color:var(--dim);background:#161d2b;border:1px solid var(--line);
+ border-radius:999px;padding:.3em .85em;cursor:pointer;transition:all .18s ease;overflow-wrap:break-word}
+button.chip:hover{color:var(--ink);border-color:#42506b}
+button.chip[aria-checked="true"]:not(.clear),button.chip[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#14161c;font-weight:700}
+button.chip:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+button.chip.clear{margin-left:auto;padding:.32em 1.05em;border-color:var(--teal);color:var(--teal);background:rgba(61,220,151,.08);font-weight:600}
+button.chip.clear:hover{background:var(--teal);color:#0b0e14}
+button.chip.clear[disabled]{cursor:default;border-color:#2f3a4d;color:#8794ab;background:#161d2b}
+select{font-family:var(--body);font-size:inherit;color:var(--ink);background:#161d2b;border:1px solid #42506b;border-radius:999px;padding:.3em 1.6em .3em .85em;cursor:pointer;
+ appearance:none;background-image:linear-gradient(45deg,transparent 50%,#aab5c9 50%),linear-gradient(135deg,#aab5c9 50%,transparent 50%);
+ background-position:right 1em top 55%,right .72em top 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+select.on{border-color:var(--amber);color:var(--amber)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:var(--space-sm);flex:none}
+.kpi{min-width:0;min-height:0;padding:var(--space-sm) var(--space-md);background:linear-gradient(150deg,#151c2b,#10151f);
+ border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;display:flex;flex-direction:column;gap:.1em}
+.kpi:nth-child(2){border-left-color:var(--teal)}.kpi:nth-child(3){border-left-color:var(--violet)}
+.kpi:nth-child(4){border-left-color:var(--blue)}.kpi:nth-child(5){border-left-color:var(--rose)}
+.kpi:nth-child(6){border-left-color:#f0f4ff}
+.kpi .v{font-family:var(--display);font-size:clamp(15px,min(2.2vw,3.9vh),32px);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .l{color:#b9c4d8;letter-spacing:.09em;text-transform:uppercase;font-size:clamp(8px,min(.9vw,1.6vh),12px)}
+.kpi svg{margin-top:.15em}
+.panel{min-width:0;min-height:0;padding:var(--space-sm) var(--space-md);background:rgba(18,23,35,.72);border:1px solid var(--line);
+ border-radius:14px;display:flex;flex-direction:column;gap:var(--space-xs)}
+.ptop{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap}
+.chartbox{flex:1;min-height:0}
+.chartbox svg{width:100%;height:100%;display:block}
+svg{display:block;max-width:100%}
+.legend{display:flex;gap:var(--space-md);color:#b9c4d8;flex-wrap:wrap;font-size:clamp(9px,min(1vw,1.8vh),13px)}
+.legend b{display:inline-block;width:.8em;height:.8em;border-radius:3px;margin-right:.4em}
+.rows{display:flex;flex-direction:column;gap:var(--space-xs);flex:1;min-height:0;justify-content:space-evenly}
+.row{display:grid;grid-template-columns:minmax(0,8.5em) minmax(0,1fr) auto;align-items:center;gap:var(--space-sm);min-width:0;
+ cursor:pointer;transition:opacity .2s ease;background:none;border:0;padding:.1em 0;text-align:left;color:inherit;font:inherit;width:100%}
+.row:hover .n,.row:focus-visible .n{color:#fff}
+.row.dim{opacity:.28}
+.row .n{color:var(--ink);overflow-wrap:break-word}
+.track{display:block;background:#1a2130;border-radius:999px;height:.72em;min-width:0}
+.fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),#2aa5ff);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.rows.alt .fill{background:linear-gradient(90deg,var(--amber),#ff6b6b)}
+.row .val{font-variant-numeric:tabular-nums;color:#b9c4d8;white-space:nowrap}
+.crumb{display:flex;gap:.4em;align-items:center;flex-wrap:wrap;color:#8494ad;font-size:clamp(9px,min(1vw,1.8vh),13px)}
+.crumb button{background:none;border:0;color:var(--teal);cursor:pointer;font:inherit;padding:0 .1em;text-decoration:underline}
+.crumb button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.tooltip{position:fixed;pointer-events:none;z-index:50;background:#0d1320;border:1px solid #3a465e;border-radius:8px;
+ padding:.45em .7em;font-size:clamp(9px,min(1vw,1.8vh),13px);color:var(--ink);box-shadow:0 12px 30px -12px #000;opacity:0;transition:opacity .12s}
+.tooltip.show{opacity:1}
+.empty{color:var(--dim);margin:auto}
+p,button,label{overflow-wrap:break-word}
+.dimmed{opacity:.22;transition:opacity .2s ease}
+@media (max-width:820px),(max-aspect-ratio:4/3){.layout{grid-template-columns:1fr !important}}
+@media (max-height:600px){.page,.panel,.kpi{padding:var(--space-sm)}body{line-height:1.2}}
+@media (forced-colors:active){
+ .page{background:Canvas}.panel,.kpi{background:Canvas;border-color:CanvasText;color:CanvasText}
+ button.chip,select{background:ButtonFace;color:ButtonText;border-color:ButtonText}
+ button.chip[aria-checked="true"],button.chip[aria-pressed="true"]{background:Highlight;color:HighlightText}
+}
+
+.insights{position:relative;display:inline-flex;margin-top:.35em}
+button.insightsBtn{font-family:var(--body);font-size:clamp(8px,min(.9vw,1.6vh),12px);letter-spacing:.09em;
+ text-transform:uppercase;color:var(--teal);background:rgba(61,220,151,.08);border:1px solid var(--teal);
+ border-radius:999px;padding:.3em 1em;cursor:pointer;transition:all .18s ease}
+button.insightsBtn:hover,button.insightsBtn[aria-expanded="true"]{background:var(--teal);color:#0b0e14;font-weight:700}
+button.insightsBtn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.insightsPop{position:absolute;top:calc(100% + .5em);right:0;z-index:60;width:min(46em,80vw);
+ background:#0d1320;border:1px solid #3a465e;border-radius:14px;padding:var(--space-md);
+ box-shadow:0 22px 50px -18px #000;opacity:0;visibility:hidden;transform:translateY(-4px);
+ transition:opacity .15s ease,transform .15s ease,visibility .15s}
+.insights:hover .insightsPop,.insights:focus-within .insightsPop,.insightsPop.show{opacity:1;visibility:visible;transform:none}
+.insightsPop h3{font-family:var(--display);font-size:clamp(9px,min(1vw,1.8vh),13px);letter-spacing:.12em;
+ text-transform:uppercase;color:var(--amber);margin:0 0 .6em}
+.itiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(13em,100%),1fr));gap:var(--space-sm);text-align:left}
+.itile{min-width:0;padding:.6em .8em;background:linear-gradient(150deg,#151c2b,#10151f);border:1px solid var(--line);
+ border-left:4px solid var(--amber);border-radius:10px;display:flex;flex-direction:column;gap:.15em}
+.itile:nth-child(2){border-left-color:var(--rose)}
+.itile:nth-child(3){border-left-color:var(--violet)}
+.itile:nth-child(4){border-left-color:var(--teal)}
+.itile .iv{font-family:var(--display);font-size:clamp(12px,min(1.7vw,3vh),22px);line-height:1;font-variant-numeric:tabular-nums}
+.itile .il{color:#b9c4d8;letter-spacing:.08em;text-transform:uppercase;font-size:clamp(8px,min(.85vw,1.5vh),11px)}
+.itile .id{color:#aab5c9;font-size:clamp(8px,min(.92vw,1.65vh),12px);line-height:1.35}
+.iact{margin:.7em 0 0;color:#c3cddf;font-size:clamp(8px,min(.92vw,1.65vh),12px);line-height:1.4}
+.iact b{color:var(--teal)}
+
+</style></head>
+<body><div class="viewport"><main class="page">
+  <header class="head">
+    <div><h1>How the Year Is <span class="accent">Tracking</span></h1><div class="sub caption">Month-by-month momentum, Jan–Aug 2026. Switch between individual months and cumulative build, and click a month to focus every panel on it.</div></div>
+    <div class="scope" id="scope">All data</div>
+  </header>
+  <section class="controls" id="filters" role="group" aria-label="Filters"></section>
+  <section class="controls" id="views" role="group" aria-label="View options"></section>
+  <section class="kpis" id="kpis" role="group" aria-label="Key metrics"></section>
+
+  <section class="layout" style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:var(--space-sm);flex:1;min-height:0">
+    <div class="panel" role="group" aria-labelledby="tC1">
+      <div class="ptop"><h2 id="tC1">Monthly <span id="metricName">revenue</span></h2><div class="legend caption" id="legC"></div></div>
+      <div class="chartbox" id="trend"></div>
+    </div>
+    <div style="display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:var(--space-sm);min-height:0">
+      <div class="panel" role="group" aria-labelledby="tC2">
+        <h2 id="tC2">Region × month</h2>
+        <div class="chartbox" id="heatC"></div>
+      </div>
+      <div class="panel" role="group" aria-labelledby="tC3">
+        <h2 id="tC3">Biggest movers — latest vs prior month</h2>
+        <div class="rows alt" id="movers"></div>
+      </div>
+    </div>
+  </section>
+
+</main></div>
+<script>
+const DATA=[{"d":"2026-01","rg":"United States","st":"Seattle","sp":"Jackie","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":10,"rev":659600,"cost":129200,"pf":530400,"dc":3},{"d":"2026-01","rg":"Japan","st":"Osaka","sp":"Lionel","cu":"CityCare","ca":"Software","pr":"Security Pack","ch":"Partner","u":4,"rev":170720,"cost":42240,"pf":128480,"dc":3},{"d":"2026-01","rg":"United States","st":"New York","sp":"Jackie","cu":"Innova Services","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":11,"rev":792000,"cost":269280,"pf":522720,"dc":0},{"d":"2026-01","rg":"South Africa","st":"Cape Town","sp":"Nelson","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Direct","u":9,"rev":384120,"cost":95040,"pf":289080,"dc":3},{"d":"2026-01","rg":"South Africa","st":"Johannesburg","sp":"Lupita","cu":"Jupiter Media","ca":"Software","pr":"CRM Annual","ch":"Direct","u":3,"rev":140400,"cost":34320,"pf":106080,"dc":10},{"d":"2026-01","rg":"United States","st":"Boston","sp":"Mohamed","cu":"Nova Education","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":6,"rev":176640,"cost":82560,"pf":94080,"dc":8},{"d":"2026-01","rg":"Japan","st":"Tokyo","sp":"Lionel","cu":"Jupiter Media","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":10,"rev":130500,"cost":68150,"pf":62350,"dc":10},{"d":"2026-01","rg":"United Arab Emirates","st":"Abu Dhabi","sp":"Queen","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Direct","u":3,"rev":193800,"cost":38760,"pf":155040,"dc":5},{"d":"2026-01","rg":"United States","st":"Boston","sp":"Mohamed","cu":"Metro Logistics","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":5,"rev":342000,"cost":122400,"pf":219600,"dc":5},{"d":"2026-01","rg":"Japan","st":"Nagoya","sp":"Priyanka","cu":"Delta Foods","ca":"Software","pr":"Analytics Suite","ch":"Online","u":4,"rev":263840,"cost":51680,"pf":212160,"dc":3},{"d":"2026-01","rg":"Japan","st":"Tokyo","sp":"Lionel","cu":"Elevate Labs","ca":"Software","pr":"Security Pack","ch":"Partner","u":10,"rev":404800,"cost":105600,"pf":299200,"dc":8},{"d":"2026-01","rg":"Japan","st":"Osaka","sp":"Priyanka","cu":"Elevate Labs","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":6,"rev":144000,"cost":60480,"pf":83520,"dc":0},{"d":"2026-01","rg":"Japan","st":"Kyoto","sp":"Priyanka","cu":"Lumina Hotels","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":11,"rev":712800,"cost":269280,"pf":443520,"dc":10},{"d":"2026-02","rg":"United States","st":"Chicago","sp":"Mohamed","cu":"Delta Foods","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":9,"rev":205200,"cost":90720,"pf":114480,"dc":5},{"d":"2026-02","rg":"United Arab Emirates","st":"Sharjah","sp":"Serena","cu":"Metro Logistics","ca":"Software","pr":"Analytics Suite","ch":"Online","u":4,"rev":263840,"cost":51680,"pf":212160,"dc":3},{"d":"2026-02","rg":"United States","st":"Denver","sp":"Mohamed","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Partner","u":6,"rev":237600,"cost":63360,"pf":174240,"dc":10},{"d":"2026-02","rg":"Japan","st":"Tokyo","sp":"Priyanka","cu":"Innova Services","ca":"Electronics","pr":"Monitor 27","ch":"Direct","u":1,"rev":24000,"cost":10080,"pf":13920,"dc":0},{"d":"2026-02","rg":"South Africa","st":"Johannesburg","sp":"Nelson","cu":"BrightWorks","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":8,"rev":148000,"cost":66600,"pf":81400,"dc":0},{"d":"2026-02","rg":"South Africa","st":"Durban","sp":"Nelson","cu":"Elevate Labs","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":11,"rev":264000,"cost":110880,"pf":153120,"dc":0},{"d":"2026-02","rg":"United Arab Emirates","st":"Dubai","sp":"Queen","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Direct","u":8,"rev":352000,"cost":84480,"pf":267520,"dc":0},{"d":"2026-02","rg":"Japan","st":"Kyoto","sp":"Priyanka","cu":"Horizon Textiles","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":3,"rev":55500,"cost":24975,"pf":30525,"dc":0},{"d":"2026-02","rg":"South Africa","st":"Durban","sp":"Nelson","cu":"Jupiter Media","ca":"Furniture","pr":"Storage Cabinet","ch":"Online","u":12,"rev":156600,"cost":81780,"pf":74820,"dc":10},{"d":"2026-02","rg":"Japan","st":"Nagoya","sp":"Priyanka","cu":"Jupiter Media","ca":"Software","pr":"Analytics Suite","ch":"Online","u":5,"rev":340000,"cost":64600,"pf":275400,"dc":0},{"d":"2026-02","rg":"South Africa","st":"Pretoria","sp":"Nelson","cu":"Delta Foods","ca":"Software","pr":"Security Pack","ch":"Direct","u":7,"rev":298760,"cost":73920,"pf":224840,"dc":3},{"d":"2026-03","rg":"South Africa","st":"Cape Town","sp":"Nelson","cu":"Horizon Textiles","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":12,"rev":372480,"cost":165120,"pf":207360,"dc":3},{"d":"2026-03","rg":"United States","st":"Chicago","sp":"Mohamed","cu":"Elevate Labs","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":11,"rev":688160,"cost":142120,"pf":546040,"dc":8},{"d":"2026-03","rg":"United States","st":"Seattle","sp":"Jackie","cu":"Orchid Finance","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":5,"rev":160000,"cost":68800,"pf":91200,"dc":0},{"d":"2026-03","rg":"United Arab Emirates","st":"Dubai","sp":"Serena","cu":"CityCare","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":4,"rev":68080,"cost":33300,"pf":34780,"dc":8},{"d":"2026-03","rg":"South Africa","st":"Durban","sp":"Lupita","cu":"CityCare","ca":"Software","pr":"Security Pack","ch":"Online","u":4,"rev":158400,"cost":42240,"pf":116160,"dc":10},{"d":"2026-03","rg":"South Africa","st":"Johannesburg","sp":"Lupita","cu":"BrightWorks","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":1,"rev":21600,"cost":10080,"pf":11520,"dc":10},{"d":"2026-03","rg":"Japan","st":"Nagoya","sp":"Lionel","cu":"Horizon Textiles","ca":"Electronics","pr":"Monitor 27","ch":"Direct","u":5,"rev":108000,"cost":50400,"pf":57600,"dc":10},{"d":"2026-03","rg":"Japan","st":"Kyoto","sp":"Priyanka","cu":"Horizon Textiles","ca":"Software","pr":"Analytics Suite","ch":"Direct","u":10,"rev":612000,"cost":129200,"pf":482800,"dc":10},{"d":"2026-03","rg":"Japan","st":"Osaka","sp":"Priyanka","cu":"Apex Retail","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":9,"rev":194400,"cost":90720,"pf":103680,"dc":10},{"d":"2026-03","rg":"United States","st":"Boston","sp":"Jackie","cu":"Apex Retail","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":11,"rev":197395,"cost":91575,"pf":105820,"dc":3},{"d":"2026-03","rg":"United States","st":"Denver","sp":"Jackie","cu":"Fusion Motors","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":3,"rev":64800,"cost":30240,"pf":34560,"dc":10},{"d":"2026-03","rg":"South Africa","st":"Johannesburg","sp":"Nelson","cu":"Horizon Textiles","ca":"Software","pr":"CRM Annual","ch":"Partner","u":7,"rev":364000,"cost":80080,"pf":283920,"dc":0},{"d":"2026-03","rg":"Japan","st":"Kyoto","sp":"Priyanka","cu":"Jupiter Media","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":5,"rev":160000,"cost":68800,"pf":91200,"dc":0},{"d":"2026-03","rg":"Japan","st":"Tokyo","sp":"Lionel","cu":"Innova Services","ca":"Furniture","pr":"Office Chair","ch":"Partner","u":12,"rev":204240,"cost":99900,"pf":104340,"dc":8},{"d":"2026-03","rg":"United States","st":"Seattle","sp":"Mohamed","cu":"Jupiter Media","ca":"Software","pr":"Security Pack","ch":"Direct","u":5,"rev":202400,"cost":52800,"pf":149600,"dc":8},{"d":"2026-03","rg":"United States","st":"New York","sp":"Jackie","cu":"Metro Logistics","ca":"Furniture","pr":"Storage Cabinet","ch":"Online","u":11,"rev":159500,"cost":74965,"pf":84535,"dc":0},{"d":"2026-04","rg":"United States","st":"Seattle","sp":"Jackie","cu":"Nova Education","ca":"Software","pr":"Security Pack","ch":"Partner","u":3,"rev":132000,"cost":31680,"pf":100320,"dc":0},{"d":"2026-04","rg":"South Africa","st":"Pretoria","sp":"Nelson","cu":"Nova Education","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":12,"rev":775200,"cost":155040,"pf":620160,"dc":5},{"d":"2026-04","rg":"South Africa","st":"Cape Town","sp":"Nelson","cu":"Fusion Motors","ca":"Electronics","pr":"Tablet Air","ch":"Direct","u":9,"rev":324900,"cost":129960,"pf":194940,"dc":5},{"d":"2026-04","rg":"United Arab Emirates","st":"Abu Dhabi","sp":"Queen","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":7,"rev":476000,"cost":90440,"pf":385560,"dc":0},{"d":"2026-04","rg":"Japan","st":"Nagoya","sp":"Priyanka","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Online","u":11,"rev":725560,"cost":142120,"pf":583440,"dc":3},{"d":"2026-04","rg":"Japan","st":"Tokyo","sp":"Priyanka","cu":"Orchid Finance","ca":"Software","pr":"Security Pack","ch":"Direct","u":5,"rev":202400,"cost":52800,"pf":149600,"dc":8},{"d":"2026-04","rg":"South Africa","st":"Pretoria","sp":"Lupita","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Online","u":10,"rev":625600,"cost":129200,"pf":496400,"dc":8},{"d":"2026-04","rg":"South Africa","st":"Pretoria","sp":"Nelson","cu":"CityCare","ca":"Furniture","pr":"Office Chair","ch":"Online","u":7,"rev":125615,"cost":58275,"pf":67340,"dc":3},{"d":"2026-04","rg":"United States","st":"New York","sp":"Jackie","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Partner","u":6,"rev":280800,"cost":68640,"pf":212160,"dc":10},{"d":"2026-04","rg":"Japan","st":"Kyoto","sp":"Priyanka","cu":"GreenGrid","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":5,"rev":342000,"cost":122400,"pf":219600,"dc":5},{"d":"2026-04","rg":"United States","st":"Seattle","sp":"Jackie","cu":"Fusion Motors","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":12,"rev":794880,"cost":293760,"pf":501120,"dc":8},{"d":"2026-04","rg":"United States","st":"Denver","sp":"Mohamed","cu":"Delta Foods","ca":"Furniture","pr":"Storage Cabinet","ch":"Direct","u":7,"rev":91350,"cost":47705,"pf":43645,"dc":10},{"d":"2026-04","rg":"South Africa","st":"Durban","sp":"Lupita","cu":"Horizon Textiles","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":9,"rev":628560,"cost":220320,"pf":408240,"dc":3},{"d":"2026-04","rg":"South Africa","st":"Durban","sp":"Nelson","cu":"Apex Retail","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":6,"rev":87000,"cost":40890,"pf":46110,"dc":0},{"d":"2026-04","rg":"United Arab Emirates","st":"Sharjah","sp":"Serena","cu":"Innova Services","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":2,"rev":64000,"cost":27520,"pf":36480,"dc":0},{"d":"2026-05","rg":"South Africa","st":"Cape Town","sp":"Lupita","cu":"Keystone Pharma","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":11,"rev":352000,"cost":151360,"pf":200640,"dc":0},{"d":"2026-05","rg":"South Africa","st":"Johannesburg","sp":"Lupita","cu":"GreenGrid","ca":"Furniture","pr":"Office Chair","ch":"Online","u":2,"rev":37000,"cost":16650,"pf":20350,"dc":0},{"d":"2026-05","rg":"United States","st":"Denver","sp":"Mohamed","cu":"Orchid Finance","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":1,"rev":68400,"cost":24480,"pf":43920,"dc":5},{"d":"2026-05","rg":"South Africa","st":"Johannesburg","sp":"Lupita","cu":"Metro Logistics","ca":"Furniture","pr":"Storage Cabinet","ch":"Direct","u":10,"rev":140650,"cost":68150,"pf":72500,"dc":3},{"d":"2026-05","rg":"Japan","st":"Tokyo","sp":"Lionel","cu":"GreenGrid","ca":"Software","pr":"Security Pack","ch":"Online","u":4,"rev":161920,"cost":42240,"pf":119680,"dc":8},{"d":"2026-05","rg":"United Arab Emirates","st":"Abu Dhabi","sp":"Queen","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Online","u":1,"rev":49400,"cost":11440,"pf":37960,"dc":5},{"d":"2026-05","rg":"South Africa","st":"Cape Town","sp":"Lupita","cu":"Horizon Textiles","ca":"Software","pr":"CRM Annual","ch":"Direct","u":2,"rev":98800,"cost":22880,"pf":75920,"dc":5},{"d":"2026-05","rg":"Japan","st":"Kyoto","sp":"Lionel","cu":"BrightWorks","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":12,"rev":364800,"cost":165120,"pf":199680,"dc":5},{"d":"2026-05","rg":"United Arab Emirates","st":"Dubai","sp":"Queen","cu":"GreenGrid","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":9,"rev":648000,"cost":220320,"pf":427680,"dc":0},{"d":"2026-05","rg":"United States","st":"Seattle","sp":"Mohamed","cu":"Lumina Hotels","ca":"Furniture","pr":"Office Chair","ch":"Online","u":2,"rev":37000,"cost":16650,"pf":20350,"dc":0},{"d":"2026-05","rg":"United Arab Emirates","st":"Abu Dhabi","sp":"Serena","cu":"Metro Logistics","ca":"Software","pr":"Security Pack","ch":"Direct","u":3,"rev":132000,"cost":31680,"pf":100320,"dc":0},{"d":"2026-06","rg":"Japan","st":"Osaka","sp":"Priyanka","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Online","u":6,"rev":408000,"cost":77520,"pf":330480,"dc":0},{"d":"2026-06","rg":"Japan","st":"Osaka","sp":"Priyanka","cu":"Innova Services","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":8,"rev":547200,"cost":195840,"pf":351360,"dc":5},{"d":"2026-06","rg":"United States","st":"New York","sp":"Jackie","cu":"Fusion Motors","ca":"Software","pr":"Security Pack","ch":"Online","u":5,"rev":209000,"cost":52800,"pf":156200,"dc":5},{"d":"2026-06","rg":"United States","st":"Seattle","sp":"Mohamed","cu":"Fusion Motors","ca":"Electronics","pr":"Tablet Air","ch":"Partner","u":12,"rev":456000,"cost":173280,"pf":282720,"dc":0},{"d":"2026-06","rg":"United Arab Emirates","st":"Abu Dhabi","sp":"Queen","cu":"Lumina Hotels","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":11,"rev":728640,"cost":269280,"pf":459360,"dc":8},{"d":"2026-06","rg":"Japan","st":"Yokohama","sp":"Lionel","cu":"Keystone Pharma","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":7,"rev":217280,"cost":96320,"pf":120960,"dc":3},{"d":"2026-06","rg":"Japan","st":"Osaka","sp":"Priyanka","cu":"Keystone Pharma","ca":"Electronics","pr":"Tablet Air","ch":"Direct","u":11,"rev":376200,"cost":158840,"pf":217360,"dc":10},{"d":"2026-06","rg":"United States","st":"Denver","sp":"Jackie","cu":"Horizon Textiles","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":7,"rev":224000,"cost":96320,"pf":127680,"dc":0},{"d":"2026-06","rg":"South Africa","st":"Durban","sp":"Lupita","cu":"Innova Services","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":5,"rev":110400,"cost":50400,"pf":60000,"dc":8},{"d":"2026-06","rg":"South Africa","st":"Durban","sp":"Lupita","cu":"Horizon Textiles","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":10,"rev":240000,"cost":100800,"pf":139200,"dc":0},{"d":"2026-06","rg":"United Arab Emirates","st":"Phoenix","sp":"Queen","cu":"Nova Education","ca":"Software","pr":"CRM Annual","ch":"Partner","u":6,"rev":302640,"cost":68640,"pf":234000,"dc":3},{"d":"2026-06","rg":"United States","st":"Boston","sp":"Mohamed","cu":"Apex Retail","ca":"Software","pr":"CRM Annual","ch":"Direct","u":6,"rev":312000,"cost":68640,"pf":243360,"dc":0},{"d":"2026-06","rg":"United States","st":"Chicago","sp":"Mohamed","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Direct","u":12,"rev":605280,"cost":137280,"pf":468000,"dc":3},{"d":"2026-07","rg":"United Arab Emirates","st":"Phoenix","sp":"Serena","cu":"Orchid Finance","ca":"Furniture","pr":"Office Chair","ch":"Online","u":3,"rev":55500,"cost":24975,"pf":30525,"dc":0},{"d":"2026-07","rg":"South Africa","st":"Cape Town","sp":"Nelson","cu":"Apex Retail","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":1,"rev":30400,"cost":13760,"pf":16640,"dc":5},{"d":"2026-07","rg":"Japan","st":"Tokyo","sp":"Priyanka","cu":"Fusion Motors","ca":"Furniture","pr":"Office Chair","ch":"Online","u":9,"rev":153180,"cost":74925,"pf":78255,"dc":8},{"d":"2026-07","rg":"United States","st":"Chicago","sp":"Mohamed","cu":"Apex Retail","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":12,"rev":384000,"cost":165120,"pf":218880,"dc":0},{"d":"2026-07","rg":"United States","st":"Denver","sp":"Mohamed","cu":"Nova Education","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":4,"rev":66600,"cost":33300,"pf":33300,"dc":10},{"d":"2026-07","rg":"United Arab Emirates","st":"Phoenix","sp":"Queen","cu":"CityCare","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":6,"rev":410400,"cost":146880,"pf":263520,"dc":5},{"d":"2026-07","rg":"United Arab Emirates","st":"Sharjah","sp":"Queen","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Partner","u":9,"rev":396000,"cost":95040,"pf":300960,"dc":0},{"d":"2026-07","rg":"South Africa","st":"Pretoria","sp":"Lupita","cu":"Keystone Pharma","ca":"Software","pr":"Security Pack","ch":"Partner","u":1,"rev":44000,"cost":10560,"pf":33440,"dc":0},{"d":"2026-07","rg":"South Africa","st":"Cape Town","sp":"Lupita","cu":"Horizon Textiles","ca":"Furniture","pr":"Office Chair","ch":"Partner","u":9,"rev":149850,"cost":74925,"pf":74925,"dc":10},{"d":"2026-07","rg":"Japan","st":"Yokohama","sp":"Lionel","cu":"GreenGrid","ca":"Software","pr":"Security Pack","ch":"Online","u":11,"rev":459800,"cost":116160,"pf":343640,"dc":5},{"d":"2026-07","rg":"United States","st":"Boston","sp":"Jackie","cu":"Lumina Hotels","ca":"Software","pr":"Security Pack","ch":"Direct","u":9,"rev":364320,"cost":95040,"pf":269280,"dc":8},{"d":"2026-08","rg":"United States","st":"Boston","sp":"Mohamed","cu":"Jupiter Media","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":9,"rev":166500,"cost":74925,"pf":91575,"dc":0},{"d":"2026-08","rg":"Japan","st":"Kyoto","sp":"Lionel","cu":"Lumina Hotels","ca":"Electronics","pr":"Tablet Air","ch":"Partner","u":12,"rev":456000,"cost":173280,"pf":282720,"dc":0},{"d":"2026-08","rg":"Japan","st":"Kyoto","sp":"Lionel","cu":"GreenGrid","ca":"Furniture","pr":"Office Chair","ch":"Online","u":5,"rev":92500,"cost":41625,"pf":50875,"dc":0},{"d":"2026-08","rg":"South Africa","st":"Durban","sp":"Lupita","cu":"Nova Education","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":8,"rev":192000,"cost":80640,"pf":111360,"dc":0},{"d":"2026-08","rg":"Japan","st":"Nagoya","sp":"Lionel","cu":"CityCare","ca":"Electronics","pr":"Laptop Pro","ch":"Partner","u":3,"rev":194400,"cost":73440,"pf":120960,"dc":10},{"d":"2026-08","rg":"United States","st":"Chicago","sp":"Jackie","cu":"Delta Foods","ca":"Software","pr":"CRM Annual","ch":"Online","u":2,"rev":104000,"cost":22880,"pf":81120,"dc":0},{"d":"2026-08","rg":"United Arab Emirates","st":"Sharjah","sp":"Queen","cu":"Innova Services","ca":"Software","pr":"CRM Annual","ch":"Direct","u":8,"rev":395200,"cost":91520,"pf":303680,"dc":5},{"d":"2026-08","rg":"South Africa","st":"Johannesburg","sp":"Lupita","cu":"Keystone Pharma","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":10,"rev":166500,"cost":83250,"pf":83250,"dc":10},{"d":"2026-08","rg":"United States","st":"Denver","sp":"Mohamed","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Online","u":5,"rev":260000,"cost":57200,"pf":202800,"dc":0},{"d":"2026-08","rg":"South Africa","st":"Durban","sp":"Nelson","cu":"Horizon Textiles","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":6,"rev":87000,"cost":40890,"pf":46110,"dc":0}];
+
+const MONTHS=["2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"];
+const MLAB=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"];
+const FIELD={rg:"Region",ca:"Category",ch:"Channel",d:"Month",pr:"Product",sp:"Salesperson",st:"State",cu:"Customer"};
+const OPTS={};
+["rg","ca","ch","pr","sp","st","cu"].forEach(k=>{OPTS[k]=[...new Set(DATA.map(r=>r[k]))].sort()});
+OPTS.d=MONTHS.slice();
+const FILTERS={};
+let METRIC="rev", MODE="abs", CUM=false, FOCUS=null, DRILL=[];
+
+function inr(n){n=Math.round(n);
+ if(Math.abs(n)>=1e6)return ""+(n/1e6).toFixed(2)+" M";
+ if(Math.abs(n)>=1e3)return ""+Math.round(n/1e3)+"K";
+ return ""+n}
+function axisFmt(v){return METRIC==="mg"?v.toFixed(0)+"%":(Math.abs(v)>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,"")+" M":Math.round(v/1e3)+"K")}
+function mval(o){return METRIC==="mg"?(o.rev?o.pf/o.rev*100:0):(METRIC==="pf"?o.pf:o.rev)}
+function mfmt(o){return METRIC==="mg"?(o.rev?(o.pf/o.rev*100).toFixed(1):"0.0")+"%":inr(mval(o))}
+function metricName(){return METRIC==="rev"?"Revenue":METRIC==="pf"?"Profit":"Margin %"}
+
+function monthLabel(m){return MLAB[MONTHS.indexOf(m)]||m}
+function optLabel(k,v){return k==="d"?monthLabel(v):v}
+
+function filtered(){
+ return DATA.filter(r=>{
+  for(const k in FILTERS){if(FILTERS[k]&&FILTERS[k]!=="All"&&r[k]!==FILTERS[k])return false}
+  for(const d of DRILL){if(r[d.k]!==d.v)return false}
+  return true});
+}
+function agg(rows,key){
+ const m=new Map();
+ rows.forEach(r=>{const o=m.get(r[key])||{rev:0,pf:0,u:0,n:0};o.rev+=r.rev;o.pf+=r.pf;o.u+=r.u;o.n++;m.set(r[key],o)});
+ return [...m.entries()].map(([k,v])=>({k,...v})).sort((a,b)=>mval(b)-mval(a));
+}
+function series(rows,key,val){
+ return MONTHS.map(m=>{const f=rows.filter(r=>r.d===m&&(!key||r[key]===val));
+  const rev=f.reduce((s,r)=>s+r.rev,0),pf=f.reduce((s,r)=>s+r.pf,0);return {rev,pf,mg:rev?pf/rev*100:0}});
+}
+function spark(rows,key,val,color){
+ const s=series(rows,key,val).map(p=>METRIC==="mg"?p.mg:(METRIC==="pf"?p.pf:p.rev));
+ const max=Math.max(1,...s),min=Math.min(0,...s),W=110,H=24;
+ const pts=s.map((v,i)=>`${(i/(s.length-1))*W},${H-2-((v-min)/((max-min)||1))*(H-4)}`).join(" ");
+ return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px" role="img" aria-label="${metricName()} trend Jan to Aug for ${val||"selection"}">
+  <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+/* ---- filters: pills when 3 options, dropdown otherwise ---- */
+function buildFilters(host,keys){
+ keys.forEach(k=>{
+  FILTERS[k]="All";
+  const box=document.createElement("div");box.className="fgroup";
+  const lab=document.createElement("span");lab.className="flab";lab.textContent=FIELD[k];box.appendChild(lab);
+  const opts=["All",...OPTS[k]];
+  if(OPTS[k].length===3){
+   box.setAttribute("role","radiogroup");box.setAttribute("aria-label",FIELD[k]);
+   opts.forEach((o,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("role","radio");
+    b.setAttribute("aria-checked",String(o==="All"));b.setAttribute("aria-posinset",String(i+1));
+    b.setAttribute("aria-setsize",String(opts.length));b.textContent=optLabel(k,o);
+    b.addEventListener("click",()=>{FILTERS[k]=o;
+     [...box.querySelectorAll("button")].forEach((x,j)=>x.setAttribute("aria-checked",String(opts[j]===o)));
+     FOCUS=null;render()});
+    box.appendChild(b)});
+  }else{
+   const sel=document.createElement("select");sel.setAttribute("aria-label",FIELD[k]);sel.id="sel-"+k;
+   opts.forEach(o=>{const op=document.createElement("option");op.value=o;op.textContent=o==="All"?"All "+FIELD[k].toLowerCase()+"s":optLabel(k,o);sel.appendChild(op)});
+   sel.addEventListener("change",()=>{FILTERS[k]=sel.value;sel.classList.toggle("on",sel.value!=="All");FOCUS=null;render()});
+   box.appendChild(sel);
+  }
+  host.appendChild(box);
+ });
+ const cb=document.createElement("button");cb.type="button";cb.className="chip clear";cb.id="clearBtn";cb.textContent="Clear all filters";
+ cb.addEventListener("click",()=>{
+  Object.keys(FILTERS).forEach(k=>{FILTERS[k]="All";
+   const b=host.querySelector("#sel-"+k);if(b){b.value="All";b.classList.remove("on")}});
+  host.querySelectorAll('[role="radiogroup"]').forEach(g=>{
+   [...g.querySelectorAll("button")].forEach((x,j)=>x.setAttribute("aria-checked",String(j===0)))});
+  DRILL=[];FOCUS=null;render()});
+ host.appendChild(cb);
+}
+function toggleGroup(host,label,items,get,set){
+ const box=document.createElement("div");box.className="fgroup";box.setAttribute("role","radiogroup");box.setAttribute("aria-label",label);
+ const l=document.createElement("span");l.className="flab";l.textContent=label;box.appendChild(l);
+ items.forEach(([v,t],i)=>{
+  const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("role","radio");
+  b.setAttribute("aria-posinset",String(i+1));b.setAttribute("aria-setsize",String(items.length));
+  b.setAttribute("aria-checked",String(get()===v));b.textContent=t;b.dataset.v=v;
+  b.addEventListener("click",()=>{set(v);
+   [...box.querySelectorAll("button")].forEach(x=>x.setAttribute("aria-checked",String(x.dataset.v===String(get()))));
+   render()});
+  box.appendChild(b)});
+ host.appendChild(box);
+}
+function filtersActive(){return Object.keys(FILTERS).some(k=>FILTERS[k]!=="All")||DRILL.length>0||FOCUS!==null}
+function syncClear(){const cb=document.getElementById("clearBtn");if(!cb)return;
+ const a=filtersActive();cb.disabled=!a;cb.setAttribute("aria-disabled",String(!a))}
+
+/* ---- tooltip ---- */
+const TIP=document.createElement("div");TIP.className="tooltip";TIP.setAttribute("role","status");document.body.appendChild(TIP);
+function tipShow(html,x,y){TIP.innerHTML=html;TIP.classList.add("show");
+ const r=TIP.getBoundingClientRect();
+ TIP.style.left=Math.min(window.innerWidth-r.width-8,Math.max(8,x+14))+"px";
+ TIP.style.top=Math.max(8,y-r.height-12)+"px"}
+function tipHide(){TIP.classList.remove("show")}
+function bindTip(el,htmlFn){
+ el.addEventListener("mousemove",e=>tipShow(htmlFn(),e.clientX,e.clientY));
+ el.addEventListener("mouseleave",tipHide);
+ el.addEventListener("focus",()=>{const r=el.getBoundingClientRect();tipShow(htmlFn(),r.left,r.bottom+r.height)});
+ el.addEventListener("blur",tipHide);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Control")tipHide()});
+
+/* ---- scale to fit ---- */
+const viewport=document.querySelector(".viewport"),page=document.querySelector(".page");
+function contentHeight(){const t=page.getBoundingClientRect().top;let b=t+page.scrollHeight;
+ page.querySelectorAll("*").forEach(e=>{if(e.matches(".tooltip"))return;b=Math.max(b,e.getBoundingClientRect().bottom)});return b-t}
+function fitPage(){const vw=viewport.clientWidth,vh=viewport.clientHeight;page.style.transform="none";page.style.width=vw+"px";
+ if(contentHeight()<=vh){page.style.width="100%";return}
+ let lo=0.2,hi=1;
+ for(let i=0;i<12;i++){const s=(lo+hi)/2;page.style.width=(vw/s)+"px";if(contentHeight()*s<=vh){lo=s}else{hi=s}}
+ page.style.width=(vw/lo)+"px";page.style.transform="scale("+lo+")"}
+let ff;function scheduleFit(){cancelAnimationFrame(ff);ff=requestAnimationFrame(fitPage)}
+new ResizeObserver(scheduleFit).observe(viewport);
+window.addEventListener("load",scheduleFit);window.addEventListener("resize",scheduleFit);
+if(document.fonts)document.fonts.ready.then(scheduleFit);
+
+/* ---- shared render helpers ---- */
+function renderKPIs(rows,host,sparkKey){
+ const rev=rows.reduce((s,r)=>s+r.rev,0),pf=rows.reduce((s,r)=>s+r.pf,0),u=rows.reduce((s,r)=>s+r.u,0);
+ const mg=rev?pf/rev*100:0, avg=rows.length?rev/rows.length:0;
+ const dc=rows.length?rows.reduce((s,r)=>s+r.dc,0)/rows.length:0;
+ const cells=[["Revenue",inr(rev)],["Profit",inr(pf)],["Margin",mg.toFixed(1)+"%"],["Orders",String(rows.length)],["Avg order",inr(avg)],["Avg discount",dc.toFixed(1)+"%"]];
+ host.innerHTML=cells.map(([l,v],i)=>
+  `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div>${i===0&&sparkKey!==false?spark(rows,null,null,"#ffb020"):""}</div>`).join("");
+}
+function rowList(host,list,total,onClick,fmtVal){
+ if(!list.length){host.innerHTML='<div class="empty caption">No orders match these filters.</div>';return}
+ const max=Math.max(...list.map(x=>Math.abs(mval(x))))||1;
+ const sum=list.reduce((s,x)=>s+mval(x),0)||1;
+ host.innerHTML="";
+ list.forEach((x,i)=>{
+  const b=document.createElement("button");b.type="button";b.className="row";
+  b.setAttribute("aria-posinset",String(i+1));b.setAttribute("aria-setsize",String(list.length));
+  const v=mval(x), pct=MODE==="pct"?(v/sum*100):null;
+  const shown=fmtVal?fmtVal(x):(MODE==="pct"&&METRIC!=="mg"?pct.toFixed(1)+"%":mfmt(x));
+  b.innerHTML=`<span class="n">${optLabel("k",x.k)}</span><span class="track"><span class="fill" style="width:${Math.max(3,Math.abs(v)/max*100)}%"></span></span><span class="val">${shown}</span>`;
+  if(FOCUS&&FOCUS.v!==x.k&&FOCUS.list===host.id)b.classList.add("dim");
+  bindTip(b,()=>`<b>${x.k}</b><br>Revenue ${inr(x.rev)} · Profit ${inr(x.pf)}<br>Margin ${(x.rev?x.pf/x.rev*100:0).toFixed(1)}% · ${x.n} orders`);
+  b.addEventListener("click",()=>onClick(x));
+  host.appendChild(b)});
+}
+
+
+function renderScope(){
+ const bits=[];
+ Object.keys(FILTERS).forEach(k=>{if(FILTERS[k]!=="All")bits.push(optLabel(k,FILTERS[k]))});
+ DRILL.forEach(d=>bits.push(optLabel(d.k,d.v)));
+ if(FOCUS)bits.push("focus: "+FOCUS.v);
+ document.getElementById("scope").textContent=(bits.length?bits.join(" · "):"All data")+" — "+metricName();
+}
+function buildViews(extra){
+ const host=document.getElementById("views");
+ toggleGroup(host,"Metric",[["rev","Revenue"],["pf","Profit"],["mg","Margin %"]],()=>METRIC,v=>{METRIC=v});
+ toggleGroup(host,"Values",[["abs","Absolute"],["pct","% of total"]],()=>MODE,v=>{MODE=v});
+ if(extra)extra(host);
+}
+
+function renderTrend(rows){
+ const per=MONTHS.map(m=>{const f=rows.filter(r=>r.d===m);
+  const rev=f.reduce((s,r)=>s+r.rev,0),pf=f.reduce((s,r)=>s+r.pf,0);return {m,rev,pf,mg:rev?pf/rev*100:0,n:f.length}});
+ let vals=per.map(p=>METRIC==="mg"?p.mg:(METRIC==="pf"?p.pf:p.rev));
+ if(CUM&&METRIC!=="mg"){let a=0;vals=vals.map(v=>a+=v)}
+ const tot=vals.reduce((s,v)=>s+v,0)||1;
+ let show=vals;
+ if(MODE==="pct"&&METRIC!=="mg")show=vals.map(v=>v/tot*100);
+ const W=760,H=360,L=88,R=40,T=16,B=40;
+ const mx=Math.max(1,...show),iw=W-L-R,ih=H-T-B,step=iw/MONTHS.length;
+ const y=v=>T+ih-(v/mx)*ih;
+ const fmt=v=>(MODE==="pct"&&METRIC!=="mg")?v.toFixed(0)+"%":(METRIC==="mg"?v.toFixed(0)+"%":axisFmt(v));
+ let g="";
+ for(let i=0;i<=4;i++){const v=mx*i/4,yy=y(v);
+  g+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#232b3a"/><text x="${L-10}" y="${yy+5}" text-anchor="end" fill="#8494ad" font-size="16" font-weight="600">${fmt(v)}</text>`}
+ let bars="",pts=[],dots="";
+ per.forEach((p,i)=>{
+  const cx=L+step*i+step/2,bw=Math.min(40,step*0.5);
+  const dim=(FOCUS&&FOCUS.v!==p.m)?' opacity=".25"':'';
+  bars+=`<rect class="mbar" data-m="${p.m}" x="${cx-bw/2}" y="${y(show[i])}" width="${bw}" height="${Math.max(0,T+ih-y(show[i]))}" rx="5" fill="url(#gA)" tabindex="0" role="button" aria-label="${monthLabel(p.m)} ${fmt(show[i])}, ${p.n} orders"${dim} style="cursor:pointer"/>`;
+  bars+=`<text x="${cx}" y="${H-B+22}" text-anchor="middle" fill="#b9c4d8" font-size="16">${monthLabel(p.m)}</text>`;
+  const my=T+ih-(p.mg/100)*ih;pts.push(cx+","+my);
+  dots+=`<circle cx="${cx}" cy="${my}" r="4.5" fill="#8b7bff" stroke="#0b0e14" stroke-width="2"/>`});
+ const line=`<polyline points="${pts.join(" ")}" fill="none" stroke="#8b7bff" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+ document.getElementById("trend").innerHTML=
+  `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${(CUM?"Cumulative ":"Monthly ")+metricName()} from January to August 2026, with a dashed margin percent line.">
+   <defs><linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc655"/><stop offset="1" stop-color="#e08a00"/></linearGradient></defs>
+   ${g}${bars}${line}${dots}</svg>`;
+ document.getElementById("legC").innerHTML=
+  `<span><b style="background:#ffb020"></b>${(CUM?"Cumulative ":"")+metricName()}</span><span><b style="background:#8b7bff"></b>Margin %</span>`;
+ document.getElementById("metricName").textContent=(CUM?"cumulative ":"")+metricName().toLowerCase();
+ document.querySelectorAll(".mbar").forEach((el,i)=>{
+  bindTip(el,()=>`<b>${monthLabel(per[i].m)}</b><br>Revenue ${inr(per[i].rev)} · Profit ${inr(per[i].pf)}<br>Margin ${per[i].mg.toFixed(1)}% · ${per[i].n} orders`);
+  const act=()=>{FOCUS=(FOCUS&&FOCUS.v===per[i].m)?null:{v:per[i].m,list:"trend"};render()};
+  el.addEventListener("click",act);
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}})});
+}
+function renderHeatC(rows){
+ const regs=OPTS.rg;
+ const vals=[];regs.forEach(rg=>MONTHS.forEach(m=>{const f=rows.filter(r=>r.rg===rg&&r.d===m);
+  vals.push(mval({rev:f.reduce((s,r)=>s+r.rev,0),pf:f.reduce((s,r)=>s+r.pf,0)}))}));
+ const mx=Math.max(1,...vals);
+ let h='<table style="width:100%;border-collapse:separate;border-spacing:2px;font-size:clamp(8px,min(.95vw,1.7vh),13px)"><thead><tr><th scope="col" style="text-align:left;color:#8494ad">Region</th>';
+ MONTHS.forEach(m=>h+='<th scope="col" style="color:#8494ad;font-weight:600">'+monthLabel(m)+'</th>');
+ h+='</tr></thead><tbody>';
+ regs.forEach(rg=>{
+  h+='<tr><th scope="row" style="text-align:left;color:#eef2f8;font-weight:600">'+rg+'</th>';
+  MONTHS.forEach(m=>{
+   const f=rows.filter(r=>r.rg===rg&&r.d===m);
+   const o={rev:f.reduce((s,r)=>s+r.rev,0),pf:f.reduce((s,r)=>s+r.pf,0)};
+   const t=mval(o)/mx, dim=(FOCUS&&FOCUS.v!==m)?"opacity:.3;":"";
+   const bg=f.length?`rgba(61,220,151,${(0.12+t*0.8).toFixed(2)})`:"#161d2b";
+   h+=`<td title="" style="${dim}background:${bg};color:${t>0.5?"#0f1a16":"#c8d2e2"};text-align:center;border-radius:5px;padding:.4em .15em;font-variant-numeric:tabular-nums">${f.length?(METRIC==="mg"?mval(o).toFixed(0):Math.round(o.rev/1e5)+"L"):"·"}</td>`});
+  h+='</tr>'});
+ document.getElementById("heatC").innerHTML=h+'</tbody></table>';
+}
+function renderMovers(rows){
+ const idx=MONTHS.map((m,i)=>i).filter(i=>rows.some(r=>r.d===MONTHS[i]));
+ const last=idx.length?MONTHS[idx[idx.length-1]]:null, prev=idx.length>1?MONTHS[idx[idx.length-2]]:null;
+ const host=document.getElementById("movers");
+ if(!last||!prev){host.innerHTML='<div class="empty caption">Not enough months in this selection to compare.</div>';return}
+ const key="pr";
+ const names=[...new Set(rows.map(r=>r[key]))];
+ const list=names.map(n=>{
+  const A=rows.filter(r=>r[key]===n&&r.d===last),B=rows.filter(r=>r[key]===n&&r.d===prev);
+  const a={rev:A.reduce((s,r)=>s+r.rev,0),pf:A.reduce((s,r)=>s+r.pf,0)},b={rev:B.reduce((s,r)=>s+r.rev,0),pf:B.reduce((s,r)=>s+r.pf,0)};
+  return {k:n,rev:a.rev,pf:a.pf,n:A.length,delta:mval(a)-mval(b)}})
+  .filter(x=>x.delta!==0).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,5);
+ if(!list.length){host.innerHTML='<div class="empty caption">No month-over-month movement in this selection.</div>';return}
+ const max=Math.max(...list.map(x=>Math.abs(x.delta)))||1;
+ host.innerHTML="";
+ list.forEach((x,i)=>{
+  const up=x.delta>0;
+  const b=document.createElement("button");b.type="button";b.className="row";
+  b.setAttribute("aria-posinset",String(i+1));b.setAttribute("aria-setsize",String(list.length));
+  b.innerHTML=`<span class="n">${x.k}</span><span class="track"><span class="fill" style="width:${Math.max(4,Math.abs(x.delta)/max*100)}%;background:${up?"linear-gradient(90deg,#3ddc97,#2aa5ff)":"linear-gradient(90deg,#ff7a7a,#ffb020)"}"></span></span>
+   <span class="val" style="color:${up?"#3ddc97":"#ff7a7a"}">${up?"▲":"▼"} ${METRIC==="mg"?Math.abs(x.delta).toFixed(1)+" pts":inr(Math.abs(x.delta))}</span>`;
+  if(FOCUS&&FOCUS.list==="movers"&&FOCUS.v!==x.k)b.classList.add("dim");
+  bindTip(b,()=>`<b>${x.k}</b><br>${monthLabel(last)} ${mfmt(x)} · ${x.n} orders<br>Change vs ${monthLabel(prev)}: ${up?"+":"−"}${METRIC==="mg"?Math.abs(x.delta).toFixed(1)+" pts":inr(Math.abs(x.delta))}`);
+  b.addEventListener("click",()=>{FILTERS.pr=FILTERS.pr==="All"||FILTERS.pr!==x.k?x.k:"All";
+   const sel=document.getElementById("sel-pr");if(sel){sel.value=FILTERS.pr;sel.classList.toggle("on",FILTERS.pr!=="All")}render()});
+  host.appendChild(b)});
+}
+function render(){
+ const rows=filtered();
+ renderKPIs(rows,document.getElementById("kpis"));
+ renderTrend(rows);renderHeatC(rows);renderMovers(rows);
+ renderScope();syncClear();scheduleFit();
+}
+buildFilters(document.getElementById("filters"),["ca","ch","rg","pr"]);
+buildViews(host=>toggleGroup(host,"Build",[["ind","Individual"],["cum","Cumulative"]],()=>CUM?"cum":"ind",v=>{CUM=(v==="cum")}));
+render();
+
+
+(function(){
+ const head=document.querySelector(".head");
+ if(!head)return;
+ const wrap=document.createElement("div");
+ wrap.className="insights";
+ wrap.innerHTML='<button type="button" class="insightsBtn" aria-expanded="false" aria-controls="insightsPop">Insights</button>'
+  +'<div class="insightsPop" id="insightsPop" role="dialog" aria-label="Actionable insights">'
+  +'<h3>Actionable insights</h3><div class="itiles"><div class="itile"><div class="iv">2.2 M</div><div class="il">H2 run rate</div><div class="id">The last three months average 2.2 M against a 3.5 M year average - a pipeline warning, not seasonality.</div></div><div class="itile"><div class="iv">-6.6 pts</div><div class="il">Margin slide</div><div class="id">Margin fell from 71.6% in April to 65.0% in August. Volume and quality are falling together.</div></div><div class="itile"><div class="iv">20%</div><div class="il">April concentration</div><div class="id">April alone (5.68 M) is a fifth of the year. Confirm whether it was repeatable or one large deal.</div></div><div class="itile"><div class="iv">2.6x</div><div class="il">Peak to trough</div><div class="id">April 5.68 M against May 2.09 M. The book is volatile month to month, so judge on trend, not last month.</div></div></div>'
+  +'<p class="iact"><b>Do next:</b> treat the H2 softness as a pipeline gap - review coverage and open pipeline for the next two months before adjusting targets.</p>'
+  +'</div>';
+ const scope=head.querySelector(".scope");
+ const col=document.createElement("div");
+ col.style.cssText="display:flex;flex-direction:column;align-items:flex-end;gap:.1em";
+ if(scope&&scope.parentNode===head){head.replaceChild(col,scope);col.appendChild(scope)}else{head.appendChild(col)}
+ col.appendChild(wrap);
+ const btn=wrap.querySelector(".insightsBtn"),pop=wrap.querySelector(".insightsPop");
+ function open(v){pop.classList.toggle("show",v);btn.setAttribute("aria-expanded",String(v))}
+ btn.addEventListener("click",()=>open(!pop.classList.contains("show")));
+ btn.addEventListener("focus",()=>open(true));
+ wrap.addEventListener("mouseenter",()=>btn.setAttribute("aria-expanded","true"));
+ wrap.addEventListener("mouseleave",()=>{open(false)});
+ document.addEventListener("keydown",e=>{if(e.key==="Escape")open(false)});
+})();
+
+</script></body></html>

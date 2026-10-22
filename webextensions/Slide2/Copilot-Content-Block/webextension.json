@@ -1,0 +1,17 @@
+{
+  "kind": "copilot-interactive-slide",
+  "name": "Copilot Content Block",
+  "title": "Sales Performance Explorer",
+  "description": "Interactive sales performance dashboard for 100 orders from January to August 2026. Filter chips for region, category and channel update six metric cards (revenue, profit, margin, orders, average order, units), a grouped bar chart of monthly revenue and profit with a margin-percent line, a top-products revenue bar list, and a salesperson leaderboard. Full dataset totals 2.77 crore revenue and 1.89 crore profit at about 68 percent margin.",
+  "slide": 2,
+  "deckSlide": 2,
+  "shapeId": 3,
+  "frame": {
+    "left": 0,
+    "top": 0,
+    "width": 1,
+    "height": 1
+  },
+  "page": "index.html",
+  "snapshot": "snapshot.png"
+}

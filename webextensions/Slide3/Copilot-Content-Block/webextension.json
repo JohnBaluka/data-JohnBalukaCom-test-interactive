@@ -1,0 +1,17 @@
+{
+  "kind": "copilot-interactive-slide",
+  "name": "Copilot Content Block",
+  "title": "Sales Performance",
+  "description": "Interactive sales dashboard. FY26 January to August, 100 orders. Total revenue 2.77 crore rupees with 68.1 percent blended margin; gross profit 1.89 crore across 697 units. Best month April at 0.57 crore; top category Software at 1.33 crore and 77.7 percent margin; average order 2.77 lakh. A toggleable bar chart breaks revenue, profit or units down by country, category, channel, product or salesperson. A line chart shows monthly revenue and profit peaking in April and dipping in May. A leaderboard table ranks the top five salespeople by revenue, led by Priyanka at 0.53 crore. Channel split: Direct 1.03 crore, Partner 0.88 crore, Online 0.86 crore.",
+  "slide": 3,
+  "deckSlide": 3,
+  "shapeId": 3,
+  "frame": {
+    "left": 0,
+    "top": 0,
+    "width": 1,
+    "height": 1
+  },
+  "page": "index.html",
+  "snapshot": "snapshot.png"
+}

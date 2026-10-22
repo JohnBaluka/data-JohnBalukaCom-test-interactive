@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sales Performance Explorer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body,.viewport{width:100%;height:100%;margin:0;overflow:hidden}
+.viewport{position:fixed;inset:0;background:#0b0e14}
+:root{
+ --space-xs:clamp(3px,min(.4vw,.71vh),8px);
+ --space-sm:clamp(5px,min(.7vw,1.24vh),12px);
+ --space-md:clamp(8px,min(1.2vw,2.13vh),20px);
+ --space-lg:clamp(12px,min(2vw,3.56vh),32px);
+ --ink:#eef2f8;--dim:#93a0b8;--line:#232b3a;
+ --amber:#ffb020;--teal:#3ddc97;--violet:#8b7bff;
+ --panel:#121723;
+ --display:Bahnschrift,"Franklin Gothic Medium","Segoe UI Semibold","Helvetica Neue",Arial,sans-serif;
+ --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+body{font-family:var(--body);color:var(--ink);font-size:clamp(9px,min(1.3vw,2.31vh),18px);line-height:1.3}
+.page{width:100%;min-width:0;height:100%;min-height:0;max-width:none;margin:0;padding:var(--space-lg);transform-origin:top left;
+ background:
+  radial-gradient(90% 120% at 100% 0%,rgba(255,176,32,.14),transparent 60%),
+  radial-gradient(70% 100% at 0% 100%,rgba(61,220,151,.10),transparent 60%),
+  linear-gradient(160deg,#0b0e14,#0e1320 60%,#0b0e14);
+ display:flex;flex-direction:column;gap:var(--space-md)}
+h1{font-family:var(--display);font-size:clamp(16px,min(3.1vw,5.5vh),44px);line-height:1;margin:0;letter-spacing:.01em}
+h2{font-family:var(--display);font-size:clamp(11px,min(1.35vw,2.4vh),19px);line-height:1.1;margin:0;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+small,.caption{font-size:clamp(8px,min(.9vw,1.6vh),13px)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;flex:none;
+ border-bottom:1px solid var(--line);padding-bottom:var(--space-sm)}
+.head .sub{color:#b9c4d8;max-width:52ch;font-size:clamp(9px,min(1.05vw,1.9vh),15px)}
+.accent{color:var(--amber)}
+.controls{display:flex;gap:var(--space-md);flex-wrap:wrap;align-items:center;flex:none}
+.fgroup{display:flex;align-items:center;gap:var(--space-xs);flex-wrap:wrap;min-width:0}
+.flab{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;color:#6f7d95;font-size:clamp(8px,min(.85vw,1.5vh),12px);margin-right:var(--space-xs)}
+button.chip{font-family:var(--body);font-size:inherit;color:var(--dim);background:#161d2b;border:1px solid var(--line);
+ border-radius:999px;padding:.32em .9em;cursor:pointer;transition:all .18s ease;overflow-wrap:break-word}
+button.chip:hover{color:var(--ink);border-color:#42506b}
+button.chip[aria-checked="true"]:not(.clear){background:var(--amber);border-color:var(--amber);color:#14161c;font-weight:700;
+ box-shadow:0 0 0 3px rgba(255,176,32,.16)}
+button.chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+button.chip.clear{margin-left:auto;padding:.34em 1.1em;border-color:#3ddc97;color:#3ddc97;background:rgba(61,220,151,.08);font-weight:600}
+button.chip.clear:hover{background:var(--teal);color:#0b0e14;border-color:var(--teal)}
+button.chip.clear[disabled]{cursor:default;border-color:#2f3a4d;color:#8794ab;background:#161d2b;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:var(--space-sm);flex:none}
+.kpi{min-width:0;min-height:0;padding:var(--space-sm) var(--space-md);background:linear-gradient(150deg,#151c2b,#10151f);
+ border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;box-shadow:0 10px 24px -18px #000}
+.kpi:nth-child(2){border-left-color:var(--teal)}
+.kpi:nth-child(3){border-left-color:var(--violet)}
+.kpi:nth-child(4){border-left-color:#5ab0ff}
+.kpi:nth-child(5){border-left-color:#ff7a7a}
+.kpi .v{font-family:var(--display);font-size:clamp(16px,min(2.5vw,4.4vh),38px);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .l{color:var(--dim);letter-spacing:.09em;text-transform:uppercase;font-size:clamp(8px,min(.85vw,1.5vh),12px);margin-top:.35em}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:var(--space-md);flex:1;min-height:0;align-items:stretch}
+.panel{min-width:0;min-height:0;padding:var(--space-md);background:rgba(18,23,35,.72);border:1px solid var(--line);
+ border-radius:14px;display:flex;flex-direction:column;gap:var(--space-sm)}
+.right{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:var(--space-md);min-height:0;overflow:visible}
+svg{display:block;max-width:100%}
+.chartbox{flex:1;min-height:0}
+.chartbox svg{width:100%;height:100%}
+.legend{display:flex;padding-top:.15em;font-size:clamp(9px,min(1vw,1.8vh),14px);gap:var(--space-md);color:var(--dim);flex-wrap:wrap}
+.legend span b{display:inline-block;width:.8em;height:.8em;border-radius:3px;margin-right:.4em;vertical-align:baseline}
+.rows{display:flex;flex-direction:column;gap:var(--space-xs);flex:1;min-height:0;justify-content:space-evenly;overflow:visible}
+.row{display:grid;grid-template-columns:minmax(0,7em) minmax(0,1fr) auto;align-items:center;gap:var(--space-sm);min-width:0}
+.row .n{color:var(--ink);overflow-wrap:break-word}
+.track{background:#1a2130;border-radius:999px;height:.72em;min-width:0}
+.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),#2aa5ff);transition:width .5s cubic-bezier(.22,1,.36,1)}
+.rows.alt .fill{background:linear-gradient(90deg,var(--amber),#ff6b6b)}
+.row .val{font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap}
+.empty{color:var(--dim);margin:auto}
+p,button,label,.card{overflow-wrap:break-word}
+@media (max-width:800px),(max-aspect-ratio:4/3){.layout{grid-template-columns:1fr}}
+@media (max-height:600px){.page,.panel,.kpi{padding:var(--space-sm)}.layout,.panel,.controls{gap:var(--space-sm)}body{line-height:1.2}}
+@media (forced-colors:active){
+ .page{background:Canvas}.panel,.kpi{background:Canvas;border-color:CanvasText;color:CanvasText}
+ button.chip{background:ButtonFace;color:ButtonText;border-color:ButtonText}
+ button.chip[aria-checked="true"]:not(.clear){background:Highlight;color:HighlightText;border-color:HighlightText}
+}
+</style>
+</head>
+<body>
+<div class="viewport">
+<main class="page">
+  <header class="head">
+    <div>
+      <h1>Sales Performance <span class="accent">Explorer</span></h1>
+      <div class="sub caption">100 orders · Jan–Aug 2026 · filter by region, category and channel to see revenue, profit and margin respond live.</div>
+    </div>
+    <div class="caption" style="color:var(--dim);font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;color:#ffb020;font-size:clamp(9px,min(1.05vw,1.9vh),14px)" id="scopeLabel">Scope: All regions</div>
+  </header>
+
+  <section class="controls" role="group" aria-label="Filters">
+    <div class="fgroup" role="radiogroup" aria-label="Region" id="f-rg"><span class="flab">Region</span></div>
+    <div class="fgroup" role="radiogroup" aria-label="Category" id="f-ca"><span class="flab">Category</span></div>
+    <div class="fgroup" role="radiogroup" aria-label="Channel" id="f-ch"><span class="flab">Channel</span></div>
+    <button type="button" class="chip clear" id="clearBtn">Clear filters</button>
+  </section>
+
+  <section class="kpis" id="kpis" role="group" aria-label="Key metrics"></section>
+
+  <section class="layout">
+    <div class="panel" role="group" aria-labelledby="t1">
+      <h2 id="t1">Revenue &amp; profit by month</h2>
+      <div class="chartbox" id="chartbox"></div>
+      <div class="legend caption"><span><b style="background:#ffb020"></b>Revenue</span><span><b style="background:#3ddc97"></b>Profit</span><span><b style="background:#8b7bff"></b>Margin %</span></div>
+    </div>
+    <div class="right">
+      <div class="panel" role="group" aria-labelledby="t2">
+        <h2 id="t2">Top products by revenue</h2>
+        <div class="rows" id="prodRows"></div>
+      </div>
+      <div class="panel" role="group" aria-labelledby="t3">
+        <h2 id="t3">Salesperson leaderboard</h2>
+        <div class="rows alt" id="repRows"></div>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+<script>
+const DATA = [{"d":"2026-01","rg":"North","st":"Himachal Pradesh","sp":"Aarav","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":10,"rev":659600,"cost":129200,"pf":530400,"disc":0.03},{"d":"2026-01","rg":"South","st":"Andhra Pradesh","sp":"Ishaan","cu":"CityCare","ca":"Software","pr":"Security Pack","ch":"Partner","u":4,"rev":170720,"cost":42240,"pf":128480,"disc":0.03},{"d":"2026-01","rg":"North","st":"Uttar Pradesh","sp":"Aarav","cu":"Innova Services","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":11,"rev":792000,"cost":269280,"pf":522720,"disc":0},{"d":"2026-01","rg":"East","st":"Bihar","sp":"Arjun","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Direct","u":9,"rev":384120,"cost":95040,"pf":289080,"disc":0.03},{"d":"2026-01","rg":"East","st":"Jharkhand","sp":"Riya","cu":"Jupiter Media","ca":"Software","pr":"CRM Annual","ch":"Direct","u":3,"rev":140400,"cost":34320,"pf":106080,"disc":0.1},{"d":"2026-01","rg":"North","st":"Punjab","sp":"Meera","cu":"Nova Education","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":6,"rev":176640,"cost":82560,"pf":94080,"disc":0.08},{"d":"2026-01","rg":"South","st":"Karnataka","sp":"Ishaan","cu":"Jupiter Media","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":10,"rev":130500,"cost":68150,"pf":62350,"disc":0.1},{"d":"2026-01","rg":"West","st":"Gujarat","sp":"Vikram","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Direct","u":3,"rev":193800,"cost":38760,"pf":155040,"disc":0.05},{"d":"2026-01","rg":"North","st":"Punjab","sp":"Meera","cu":"Metro Logistics","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":5,"rev":342000,"cost":122400,"pf":219600,"disc":0.05},{"d":"2026-01","rg":"South","st":"Telangana","sp":"Kavya","cu":"Delta Foods","ca":"Software","pr":"Analytics Suite","ch":"Online","u":4,"rev":263840,"cost":51680,"pf":212160,"disc":0.03},{"d":"2026-01","rg":"South","st":"Karnataka","sp":"Ishaan","cu":"Elevate Labs","ca":"Software","pr":"Security Pack","ch":"Partner","u":10,"rev":404800,"cost":105600,"pf":299200,"disc":0.08},{"d":"2026-01","rg":"South","st":"Andhra Pradesh","sp":"Kavya","cu":"Elevate Labs","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":6,"rev":144000,"cost":60480,"pf":83520,"disc":0},{"d":"2026-01","rg":"South","st":"Kerala","sp":"Kavya","cu":"Lumina Hotels","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":11,"rev":712800,"cost":269280,"pf":443520,"disc":0.1},{"d":"2026-02","rg":"North","st":"Haryana","sp":"Meera","cu":"Delta Foods","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":9,"rev":205200,"cost":90720,"pf":114480,"disc":0.05},{"d":"2026-02","rg":"West","st":"Maharashtra","sp":"Neha","cu":"Metro Logistics","ca":"Software","pr":"Analytics Suite","ch":"Online","u":4,"rev":263840,"cost":51680,"pf":212160,"disc":0.03},{"d":"2026-02","rg":"North","st":"Uttarakhand","sp":"Meera","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Partner","u":6,"rev":237600,"cost":63360,"pf":174240,"disc":0.1},{"d":"2026-02","rg":"South","st":"Karnataka","sp":"Kavya","cu":"Innova Services","ca":"Electronics","pr":"Monitor 27","ch":"Direct","u":1,"rev":24000,"cost":10080,"pf":13920,"disc":0},{"d":"2026-02","rg":"East","st":"Jharkhand","sp":"Arjun","cu":"BrightWorks","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":8,"rev":148000,"cost":66600,"pf":81400,"disc":0},{"d":"2026-02","rg":"East","st":"Odisha","sp":"Arjun","cu":"Elevate Labs","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":11,"rev":264000,"cost":110880,"pf":153120,"disc":0},{"d":"2026-02","rg":"West","st":"Goa","sp":"Vikram","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Direct","u":8,"rev":352000,"cost":84480,"pf":267520,"disc":0},{"d":"2026-02","rg":"South","st":"Kerala","sp":"Kavya","cu":"Horizon Textiles","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":3,"rev":55500,"cost":24975,"pf":30525,"disc":0},{"d":"2026-02","rg":"East","st":"Odisha","sp":"Arjun","cu":"Jupiter Media","ca":"Furniture","pr":"Storage Cabinet","ch":"Online","u":12,"rev":156600,"cost":81780,"pf":74820,"disc":0.1},{"d":"2026-02","rg":"South","st":"Telangana","sp":"Kavya","cu":"Jupiter Media","ca":"Software","pr":"Analytics Suite","ch":"Online","u":5,"rev":340000,"cost":64600,"pf":275400,"disc":0},{"d":"2026-02","rg":"East","st":"West Bengal","sp":"Arjun","cu":"Delta Foods","ca":"Software","pr":"Security Pack","ch":"Direct","u":7,"rev":298760,"cost":73920,"pf":224840,"disc":0.03},{"d":"2026-03","rg":"East","st":"Bihar","sp":"Arjun","cu":"Horizon Textiles","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":12,"rev":372480,"cost":165120,"pf":207360,"disc":0.03},{"d":"2026-03","rg":"North","st":"Haryana","sp":"Meera","cu":"Elevate Labs","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":11,"rev":688160,"cost":142120,"pf":546040,"disc":0.08},{"d":"2026-03","rg":"North","st":"Himachal Pradesh","sp":"Aarav","cu":"Orchid Finance","ca":"Furniture","pr":"Standing Desk","ch":"Direct","u":5,"rev":160000,"cost":68800,"pf":91200,"disc":0},{"d":"2026-03","rg":"West","st":"Goa","sp":"Neha","cu":"CityCare","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":4,"rev":68080,"cost":33300,"pf":34780,"disc":0.08},{"d":"2026-03","rg":"East","st":"Odisha","sp":"Riya","cu":"CityCare","ca":"Software","pr":"Security Pack","ch":"Online","u":4,"rev":158400,"cost":42240,"pf":116160,"disc":0.1},{"d":"2026-03","rg":"East","st":"Jharkhand","sp":"Riya","cu":"BrightWorks","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":1,"rev":21600,"cost":10080,"pf":11520,"disc":0.1},{"d":"2026-03","rg":"South","st":"Telangana","sp":"Ishaan","cu":"Horizon Textiles","ca":"Electronics","pr":"Monitor 27","ch":"Direct","u":5,"rev":108000,"cost":50400,"pf":57600,"disc":0.1},{"d":"2026-03","rg":"South","st":"Kerala","sp":"Kavya","cu":"Horizon Textiles","ca":"Software","pr":"Analytics Suite","ch":"Direct","u":10,"rev":612000,"cost":129200,"pf":482800,"disc":0.1},{"d":"2026-03","rg":"South","st":"Andhra Pradesh","sp":"Kavya","cu":"Apex Retail","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":9,"rev":194400,"cost":90720,"pf":103680,"disc":0.1},{"d":"2026-03","rg":"North","st":"Punjab","sp":"Aarav","cu":"Apex Retail","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":11,"rev":197395,"cost":91575,"pf":105820,"disc":0.03},{"d":"2026-03","rg":"North","st":"Uttarakhand","sp":"Aarav","cu":"Fusion Motors","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":3,"rev":64800,"cost":30240,"pf":34560,"disc":0.1},{"d":"2026-03","rg":"East","st":"Jharkhand","sp":"Arjun","cu":"Horizon Textiles","ca":"Software","pr":"CRM Annual","ch":"Partner","u":7,"rev":364000,"cost":80080,"pf":283920,"disc":0},{"d":"2026-03","rg":"South","st":"Kerala","sp":"Kavya","cu":"Jupiter Media","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":5,"rev":160000,"cost":68800,"pf":91200,"disc":0},{"d":"2026-03","rg":"South","st":"Karnataka","sp":"Ishaan","cu":"Innova Services","ca":"Furniture","pr":"Office Chair","ch":"Partner","u":12,"rev":204240,"cost":99900,"pf":104340,"disc":0.08},{"d":"2026-03","rg":"North","st":"Himachal Pradesh","sp":"Meera","cu":"Jupiter Media","ca":"Software","pr":"Security Pack","ch":"Direct","u":5,"rev":202400,"cost":52800,"pf":149600,"disc":0.08},{"d":"2026-03","rg":"North","st":"Uttar Pradesh","sp":"Aarav","cu":"Metro Logistics","ca":"Furniture","pr":"Storage Cabinet","ch":"Online","u":11,"rev":159500,"cost":74965,"pf":84535,"disc":0},{"d":"2026-04","rg":"North","st":"Himachal Pradesh","sp":"Aarav","cu":"Nova Education","ca":"Software","pr":"Security Pack","ch":"Partner","u":3,"rev":132000,"cost":31680,"pf":100320,"disc":0},{"d":"2026-04","rg":"East","st":"West Bengal","sp":"Arjun","cu":"Nova Education","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":12,"rev":775200,"cost":155040,"pf":620160,"disc":0.05},{"d":"2026-04","rg":"East","st":"Bihar","sp":"Arjun","cu":"Fusion Motors","ca":"Electronics","pr":"Tablet Air","ch":"Direct","u":9,"rev":324900,"cost":129960,"pf":194940,"disc":0.05},{"d":"2026-04","rg":"West","st":"Gujarat","sp":"Vikram","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Partner","u":7,"rev":476000,"cost":90440,"pf":385560,"disc":0},{"d":"2026-04","rg":"South","st":"Telangana","sp":"Kavya","cu":"GreenGrid","ca":"Software","pr":"Analytics Suite","ch":"Online","u":11,"rev":725560,"cost":142120,"pf":583440,"disc":0.03},{"d":"2026-04","rg":"South","st":"Karnataka","sp":"Kavya","cu":"Orchid Finance","ca":"Software","pr":"Security Pack","ch":"Direct","u":5,"rev":202400,"cost":52800,"pf":149600,"disc":0.08},{"d":"2026-04","rg":"East","st":"West Bengal","sp":"Riya","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Online","u":10,"rev":625600,"cost":129200,"pf":496400,"disc":0.08},{"d":"2026-04","rg":"East","st":"West Bengal","sp":"Arjun","cu":"CityCare","ca":"Furniture","pr":"Office Chair","ch":"Online","u":7,"rev":125615,"cost":58275,"pf":67340,"disc":0.03},{"d":"2026-04","rg":"North","st":"Uttar Pradesh","sp":"Aarav","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Partner","u":6,"rev":280800,"cost":68640,"pf":212160,"disc":0.1},{"d":"2026-04","rg":"South","st":"Kerala","sp":"Kavya","cu":"GreenGrid","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":5,"rev":342000,"cost":122400,"pf":219600,"disc":0.05},{"d":"2026-04","rg":"North","st":"Himachal Pradesh","sp":"Aarav","cu":"Fusion Motors","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":12,"rev":794880,"cost":293760,"pf":501120,"disc":0.08},{"d":"2026-04","rg":"North","st":"Uttarakhand","sp":"Meera","cu":"Delta Foods","ca":"Furniture","pr":"Storage Cabinet","ch":"Direct","u":7,"rev":91350,"cost":47705,"pf":43645,"disc":0.1},{"d":"2026-04","rg":"East","st":"Odisha","sp":"Riya","cu":"Horizon Textiles","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":9,"rev":628560,"cost":220320,"pf":408240,"disc":0.03},{"d":"2026-04","rg":"East","st":"Odisha","sp":"Arjun","cu":"Apex Retail","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":6,"rev":87000,"cost":40890,"pf":46110,"disc":0},{"d":"2026-04","rg":"West","st":"Maharashtra","sp":"Neha","cu":"Innova Services","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":2,"rev":64000,"cost":27520,"pf":36480,"disc":0},{"d":"2026-05","rg":"East","st":"Bihar","sp":"Riya","cu":"Keystone Pharma","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":11,"rev":352000,"cost":151360,"pf":200640,"disc":0},{"d":"2026-05","rg":"East","st":"Jharkhand","sp":"Riya","cu":"GreenGrid","ca":"Furniture","pr":"Office Chair","ch":"Online","u":2,"rev":37000,"cost":16650,"pf":20350,"disc":0},{"d":"2026-05","rg":"North","st":"Uttarakhand","sp":"Meera","cu":"Orchid Finance","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":1,"rev":68400,"cost":24480,"pf":43920,"disc":0.05},{"d":"2026-05","rg":"East","st":"Jharkhand","sp":"Riya","cu":"Metro Logistics","ca":"Furniture","pr":"Storage Cabinet","ch":"Direct","u":10,"rev":140650,"cost":68150,"pf":72500,"disc":0.03},{"d":"2026-05","rg":"South","st":"Karnataka","sp":"Ishaan","cu":"GreenGrid","ca":"Software","pr":"Security Pack","ch":"Online","u":4,"rev":161920,"cost":42240,"pf":119680,"disc":0.08},{"d":"2026-05","rg":"West","st":"Gujarat","sp":"Vikram","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Online","u":1,"rev":49400,"cost":11440,"pf":37960,"disc":0.05},{"d":"2026-05","rg":"East","st":"Bihar","sp":"Riya","cu":"Horizon Textiles","ca":"Software","pr":"CRM Annual","ch":"Direct","u":2,"rev":98800,"cost":22880,"pf":75920,"disc":0.05},{"d":"2026-05","rg":"South","st":"Kerala","sp":"Ishaan","cu":"BrightWorks","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":12,"rev":364800,"cost":165120,"pf":199680,"disc":0.05},{"d":"2026-05","rg":"West","st":"Goa","sp":"Vikram","cu":"GreenGrid","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":9,"rev":648000,"cost":220320,"pf":427680,"disc":0},{"d":"2026-05","rg":"North","st":"Himachal Pradesh","sp":"Meera","cu":"Lumina Hotels","ca":"Furniture","pr":"Office Chair","ch":"Online","u":2,"rev":37000,"cost":16650,"pf":20350,"disc":0},{"d":"2026-05","rg":"West","st":"Gujarat","sp":"Neha","cu":"Metro Logistics","ca":"Software","pr":"Security Pack","ch":"Direct","u":3,"rev":132000,"cost":31680,"pf":100320,"disc":0},{"d":"2026-06","rg":"South","st":"Andhra Pradesh","sp":"Kavya","cu":"CityCare","ca":"Software","pr":"Analytics Suite","ch":"Online","u":6,"rev":408000,"cost":77520,"pf":330480,"disc":0},{"d":"2026-06","rg":"South","st":"Andhra Pradesh","sp":"Kavya","cu":"Innova Services","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":8,"rev":547200,"cost":195840,"pf":351360,"disc":0.05},{"d":"2026-06","rg":"North","st":"Uttar Pradesh","sp":"Aarav","cu":"Fusion Motors","ca":"Software","pr":"Security Pack","ch":"Online","u":5,"rev":209000,"cost":52800,"pf":156200,"disc":0.05},{"d":"2026-06","rg":"North","st":"Himachal Pradesh","sp":"Meera","cu":"Fusion Motors","ca":"Electronics","pr":"Tablet Air","ch":"Partner","u":12,"rev":456000,"cost":173280,"pf":282720,"disc":0},{"d":"2026-06","rg":"West","st":"Gujarat","sp":"Vikram","cu":"Lumina Hotels","ca":"Electronics","pr":"Laptop Pro","ch":"Direct","u":11,"rev":728640,"cost":269280,"pf":459360,"disc":0.08},{"d":"2026-06","rg":"South","st":"Tamil Nadu","sp":"Ishaan","cu":"Keystone Pharma","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":7,"rev":217280,"cost":96320,"pf":120960,"disc":0.03},{"d":"2026-06","rg":"South","st":"Andhra Pradesh","sp":"Kavya","cu":"Keystone Pharma","ca":"Electronics","pr":"Tablet Air","ch":"Direct","u":11,"rev":376200,"cost":158840,"pf":217360,"disc":0.1},{"d":"2026-06","rg":"North","st":"Uttarakhand","sp":"Aarav","cu":"Horizon Textiles","ca":"Furniture","pr":"Standing Desk","ch":"Partner","u":7,"rev":224000,"cost":96320,"pf":127680,"disc":0},{"d":"2026-06","rg":"East","st":"Odisha","sp":"Riya","cu":"Innova Services","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":5,"rev":110400,"cost":50400,"pf":60000,"disc":0.08},{"d":"2026-06","rg":"East","st":"Odisha","sp":"Riya","cu":"Horizon Textiles","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":10,"rev":240000,"cost":100800,"pf":139200,"disc":0},{"d":"2026-06","rg":"West","st":"Rajasthan","sp":"Vikram","cu":"Nova Education","ca":"Software","pr":"CRM Annual","ch":"Partner","u":6,"rev":302640,"cost":68640,"pf":234000,"disc":0.03},{"d":"2026-06","rg":"North","st":"Punjab","sp":"Meera","cu":"Apex Retail","ca":"Software","pr":"CRM Annual","ch":"Direct","u":6,"rev":312000,"cost":68640,"pf":243360,"disc":0},{"d":"2026-06","rg":"North","st":"Haryana","sp":"Meera","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Direct","u":12,"rev":605280,"cost":137280,"pf":468000,"disc":0.03},{"d":"2026-07","rg":"West","st":"Rajasthan","sp":"Neha","cu":"Orchid Finance","ca":"Furniture","pr":"Office Chair","ch":"Online","u":3,"rev":55500,"cost":24975,"pf":30525,"disc":0},{"d":"2026-07","rg":"East","st":"Bihar","sp":"Arjun","cu":"Apex Retail","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":1,"rev":30400,"cost":13760,"pf":16640,"disc":0.05},{"d":"2026-07","rg":"South","st":"Karnataka","sp":"Kavya","cu":"Fusion Motors","ca":"Furniture","pr":"Office Chair","ch":"Online","u":9,"rev":153180,"cost":74925,"pf":78255,"disc":0.08},{"d":"2026-07","rg":"North","st":"Haryana","sp":"Meera","cu":"Apex Retail","ca":"Furniture","pr":"Standing Desk","ch":"Online","u":12,"rev":384000,"cost":165120,"pf":218880,"disc":0},{"d":"2026-07","rg":"North","st":"Uttarakhand","sp":"Meera","cu":"Nova Education","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":4,"rev":66600,"cost":33300,"pf":33300,"disc":0.1},{"d":"2026-07","rg":"West","st":"Rajasthan","sp":"Vikram","cu":"CityCare","ca":"Electronics","pr":"Laptop Pro","ch":"Online","u":6,"rev":410400,"cost":146880,"pf":263520,"disc":0.05},{"d":"2026-07","rg":"West","st":"Maharashtra","sp":"Vikram","cu":"BrightWorks","ca":"Software","pr":"Security Pack","ch":"Partner","u":9,"rev":396000,"cost":95040,"pf":300960,"disc":0},{"d":"2026-07","rg":"East","st":"West Bengal","sp":"Riya","cu":"Keystone Pharma","ca":"Software","pr":"Security Pack","ch":"Partner","u":1,"rev":44000,"cost":10560,"pf":33440,"disc":0},{"d":"2026-07","rg":"East","st":"Bihar","sp":"Riya","cu":"Horizon Textiles","ca":"Furniture","pr":"Office Chair","ch":"Partner","u":9,"rev":149850,"cost":74925,"pf":74925,"disc":0.1},{"d":"2026-07","rg":"South","st":"Tamil Nadu","sp":"Ishaan","cu":"GreenGrid","ca":"Software","pr":"Security Pack","ch":"Online","u":11,"rev":459800,"cost":116160,"pf":343640,"disc":0.05},{"d":"2026-07","rg":"North","st":"Punjab","sp":"Aarav","cu":"Lumina Hotels","ca":"Software","pr":"Security Pack","ch":"Direct","u":9,"rev":364320,"cost":95040,"pf":269280,"disc":0.08},{"d":"2026-08","rg":"North","st":"Punjab","sp":"Meera","cu":"Jupiter Media","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":9,"rev":166500,"cost":74925,"pf":91575,"disc":0},{"d":"2026-08","rg":"South","st":"Kerala","sp":"Ishaan","cu":"Lumina Hotels","ca":"Electronics","pr":"Tablet Air","ch":"Partner","u":12,"rev":456000,"cost":173280,"pf":282720,"disc":0},{"d":"2026-08","rg":"South","st":"Kerala","sp":"Ishaan","cu":"GreenGrid","ca":"Furniture","pr":"Office Chair","ch":"Online","u":5,"rev":92500,"cost":41625,"pf":50875,"disc":0},{"d":"2026-08","rg":"East","st":"Odisha","sp":"Riya","cu":"Nova Education","ca":"Electronics","pr":"Monitor 27","ch":"Partner","u":8,"rev":192000,"cost":80640,"pf":111360,"disc":0},{"d":"2026-08","rg":"South","st":"Telangana","sp":"Ishaan","cu":"CityCare","ca":"Electronics","pr":"Laptop Pro","ch":"Partner","u":3,"rev":194400,"cost":73440,"pf":120960,"disc":0.1},{"d":"2026-08","rg":"North","st":"Haryana","sp":"Aarav","cu":"Delta Foods","ca":"Software","pr":"CRM Annual","ch":"Online","u":2,"rev":104000,"cost":22880,"pf":81120,"disc":0},{"d":"2026-08","rg":"West","st":"Maharashtra","sp":"Vikram","cu":"Innova Services","ca":"Software","pr":"CRM Annual","ch":"Direct","u":8,"rev":395200,"cost":91520,"pf":303680,"disc":0.05},{"d":"2026-08","rg":"East","st":"Jharkhand","sp":"Riya","cu":"Keystone Pharma","ca":"Furniture","pr":"Office Chair","ch":"Direct","u":10,"rev":166500,"cost":83250,"pf":83250,"disc":0.1},{"d":"2026-08","rg":"North","st":"Uttarakhand","sp":"Meera","cu":"Orchid Finance","ca":"Software","pr":"CRM Annual","ch":"Online","u":5,"rev":260000,"cost":57200,"pf":202800,"disc":0},{"d":"2026-08","rg":"East","st":"Odisha","sp":"Arjun","cu":"Horizon Textiles","ca":"Furniture","pr":"Storage Cabinet","ch":"Partner","u":6,"rev":87000,"cost":40890,"pf":46110,"disc":0}];
+const MONTHS=["2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08"];
+const MLAB=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"];
+const FILTERS={rg:"All",ca:"All",ch:"All"};
+const OPTS={rg:["All","North","South","East","West"],ca:["All","Software","Electronics","Furniture"],ch:["All","Direct","Online","Partner"]};
+const NAMES={rg:"Region",ca:"Category",ch:"Channel"};
+
+function inr(n){
+  if(Math.abs(n)>=1e6)return (n/1e6).toFixed(2)+" M";
+  if(Math.abs(n)>=1e3)return Math.round(n/1e3)+"K";
+  return ""+Math.round(n);
+}
+function axis(v){return v>=1e6?(v/1e6).toFixed(1).replace(/\.0$/,"")+" M":Math.round(v/1e3)+"K"}
+function buildChips(){
+  Object.keys(OPTS).forEach(k=>{
+    const box=document.getElementById("f-"+k);
+    OPTS[k].forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.className="chip";b.type="button";b.setAttribute("role","radio");
+      b.setAttribute("aria-checked",String(FILTERS[k]===o));
+      b.setAttribute("aria-posinset",String(i+1));
+      b.setAttribute("aria-setsize",String(OPTS[k].length));
+      b.textContent=o;
+      b.addEventListener("click",()=>{
+        FILTERS[k]=o;
+        [...box.querySelectorAll("button")].forEach(x=>x.setAttribute("aria-checked",String(x.textContent===o)));
+        render();
+      });
+      box.appendChild(b);
+    });
+  });
+}
+function filtered(){
+  return DATA.filter(r=>(FILTERS.rg==="All"||r.rg===FILTERS.rg)&&(FILTERS.ca==="All"||r.ca===FILTERS.ca)&&(FILTERS.ch==="All"||r.ch===FILTERS.ch));
+}
+function agg(rows,key){
+  const m=new Map();
+  rows.forEach(r=>{const k=r[key];const o=m.get(k)||{rev:0,pf:0};o.rev+=r.rev;o.pf+=r.pf;m.set(k,o)});
+  return [...m.entries()].map(([k,v])=>({k,...v})).sort((a,b)=>b.rev-a.rev);
+}
+function renderKPIs(rows){
+  const rev=rows.reduce((s,r)=>s+r.rev,0), pf=rows.reduce((s,r)=>s+r.pf,0);
+  const units=rows.reduce((s,r)=>s+r.u,0);
+  const margin=rev?pf/rev*100:0;
+  const avg=rows.length?rev/rows.length:0;
+  const items=[["Revenue",inr(rev)],["Profit",inr(pf)],["Margin",margin.toFixed(1)+"%"],["Orders",String(rows.length)],["Avg order",inr(avg)],["Units sold",String(units)]];
+  document.getElementById("kpis").innerHTML=items.map(([l,v])=>
+    `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+}
+function renderChart(rows){
+  const per=MONTHS.map(m=>{
+    const f=rows.filter(r=>r.d===m);
+    const rev=f.reduce((s,r)=>s+r.rev,0), pf=f.reduce((s,r)=>s+r.pf,0);
+    return {rev,pf,mg:rev?pf/rev*100:0};
+  });
+  const W=800,H=400,L=92,R=46,T=14,B=42;
+  const max=Math.max(1,...per.map(p=>p.rev));
+  const iw=W-L-R, ih=H-T-B, step=iw/MONTHS.length;
+  const y=v=>T+ih-(v/max)*ih;
+  let g="";
+  for(let i=0;i<=4;i++){const v=max*i/4;const yy=y(v);
+    g+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#232b3a" stroke-width="1"/>`+
+       `<text x="${L-10}" y="${yy+4}" text-anchor="end" fill="#6f7d95" font-size="17" font-weight="600">${axis(v)}</text>`;}
+  let bars="",pts=[],dots="";
+  per.forEach((p,i)=>{
+    const cx=L+step*i+step/2, bw=Math.min(38,step*0.34);
+    const hR=ih-(y(p.rev)-T), hP=ih-(y(p.pf)-T);
+    bars+=`<rect x="${cx-bw-2}" y="${y(p.rev)}" width="${bw}" height="${Math.max(0,hR)}" rx="4" fill="url(#gA)"><title>${MLAB[i]} revenue ${inr(p.rev)}</title></rect>`;
+    bars+=`<rect x="${cx+2}" y="${y(p.pf)}" width="${bw}" height="${Math.max(0,hP)}" rx="4" fill="url(#gB)"><title>${MLAB[i]} profit ${inr(p.pf)}</title></rect>`;
+    bars+=`<text x="${cx}" y="${H-B+22}" text-anchor="middle" fill="#c3cddf" font-size="17">${MLAB[i]}</text>`;
+    const my=T+ih-(p.mg/100)*ih;
+    pts.push(`${cx},${my}`);
+    dots+=`<circle cx="${cx}" cy="${my}" r="4.5" fill="#8b7bff" stroke="#0b0e14" stroke-width="2"><title>${MLAB[i]} margin ${p.mg.toFixed(1)}%</title></circle>`;
+  });
+  const line=pts.length?`<polyline points="${pts.join(" ")}" fill="none" stroke="#8b7bff" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="6 5" opacity=".95"/>`:"";
+  const desc=`Grouped bar chart of monthly revenue and profit from January to August 2026 with a dashed line showing margin percent. Peak revenue month is ${MLAB[per.indexOf(per.slice().sort((a,b)=>b.rev-a.rev)[0])]||"n/a"}.`;
+  document.getElementById("chartbox").innerHTML=
+   `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${desc}">
+     <defs>
+      <linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc655"/><stop offset="1" stop-color="#e08a00"/></linearGradient>
+      <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5df0b3"/><stop offset="1" stop-color="#1e9d6a"/></linearGradient>
+     </defs>
+     ${g}${bars}${line}${dots}
+     <text x="${W-R+8}" y="${T+10}" fill="#8b7bff" font-size="15">100%</text>
+   </svg>`;
+}
+function renderRows(id,list,total){
+  const el=document.getElementById(id);
+  if(!list.length){el.innerHTML='<div class="empty caption">No orders match these filters.</div>';return;}
+  const max=Math.max(...list.map(x=>x.rev));
+  el.innerHTML=list.map(x=>
+    `<div class="row"><span class="n">${x.k}</span><span class="track"><span class="fill" style="width:${Math.max(3,x.rev/max*100)}%"></span></span><span class="val">${inr(x.rev)}</span></div>`).join("");
+}
+function render(){
+  const rows=filtered();
+  renderKPIs(rows);
+  renderChart(rows);
+  renderRows("prodRows",agg(rows,"pr").slice(0,5));
+  renderRows("repRows",agg(rows,"sp").slice(0,5));
+  const parts=[FILTERS.rg==="All"?"All regions":FILTERS.rg+" region",FILTERS.ca==="All"?null:FILTERS.ca,FILTERS.ch==="All"?null:FILTERS.ch+" channel"].filter(Boolean);
+  document.getElementById("scopeLabel").textContent="Scope: "+parts.join(" · ");
+  const cb=document.getElementById("clearBtn");
+  const active=Object.keys(FILTERS).some(k=>FILTERS[k]!=="All");
+  cb.disabled=!active;
+  cb.setAttribute("aria-disabled",String(!active));
+  scheduleFit();
+}
+const viewport=document.querySelector(".viewport"),page=document.querySelector(".page");
+function contentHeight(){const pageTop=page.getBoundingClientRect().top;let bottom=pageTop+page.scrollHeight;
+ page.querySelectorAll("*").forEach(e=>{bottom=Math.max(bottom,e.getBoundingClientRect().bottom)});return bottom-pageTop}
+function fitPage(){const vw=viewport.clientWidth,vh=viewport.clientHeight;page.style.transform="none";page.style.width=vw+"px";
+ if(contentHeight()<=vh){page.style.width="100%";return}
+ let low=0.2,high=1;
+ for(let i=0;i<12;i++){const s=(low+high)/2;page.style.width=(vw/s)+"px";if(contentHeight()*s<=vh){low=s}else{high=s}}
+ page.style.width=(vw/low)+"px";page.style.transform="scale("+low+")"}
+let fitFrame;function scheduleFit(){cancelAnimationFrame(fitFrame);fitFrame=requestAnimationFrame(fitPage)}
+new ResizeObserver(scheduleFit).observe(viewport);
+window.addEventListener("load",scheduleFit);window.addEventListener("resize",scheduleFit);
+document.fonts&&document.fonts.ready.then(scheduleFit);
+document.getElementById("clearBtn").addEventListener("click",()=>{
+  Object.keys(OPTS).forEach(k=>{FILTERS[k]="All";
+    [...document.getElementById("f-"+k).querySelectorAll("button")].forEach(x=>x.setAttribute("aria-checked",String(x.textContent==="All")))});
+  render();
+});
+buildChips();render();
+</script>
+</body>
+</html>

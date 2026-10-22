@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sales Performance</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body,.viewport{width:100%;height:100%;margin:0;overflow:hidden}
+.viewport{position:fixed;inset:0;background:#07172a}
+:root{
+  --space-xs:clamp(3px,min(.4vw,.71vh),8px);
+  --space-sm:clamp(5px,min(.7vw,1.24vh),12px);
+  --space-md:clamp(8px,min(1.2vw,2.13vh),20px);
+  --space-lg:clamp(12px,min(2vw,3.56vh),32px);
+  --navy:#0E2841;--ink:#07172a;--teal:#38b6d9;--teal-d:#156082;
+  --amber:#E97132;--paper:#F3F6F9;--muted:#9FB4C7;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:"Aptos","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+.page{
+  width:100%;min-width:0;height:100%;min-height:0;max-width:none;margin:0;
+  padding:var(--space-lg);transform-origin:top left;
+  font-family:var(--sans);color:var(--paper);
+  background:
+    radial-gradient(120% 90% at 82% 8%,rgba(56,182,217,.20) 0%,rgba(7,23,42,0) 58%),
+    radial-gradient(90% 80% at 6% 102%,rgba(233,113,50,.18) 0%,rgba(7,23,42,0) 60%),
+    linear-gradient(158deg,#0E2841 0%,#07172a 62%,#050f1d 100%);
+  display:flex;flex-direction:column;gap:var(--space-md);
+}
+body,button,input,select{font-size:clamp(9px,min(1.3vw,2.31vh),18px);line-height:1.3}
+h1{font-size:clamp(16px,min(4vw,7.11vh),56px);line-height:1;margin:0}
+h2{font-size:clamp(14px,min(2.4vw,4.27vh),34px);line-height:1.1;margin:0}
+small,.caption{font-size:clamp(8px,min(.9vw,1.6vh),13px)}
+
+/* header */
+.head{display:flex;flex:none;align-items:flex-end;justify-content:space-between;gap:var(--space-md);flex-wrap:wrap;
+  border-bottom:1px solid rgba(159,180,199,.28);padding-bottom:var(--space-sm)}
+.eyebrow{font-size:clamp(8px,min(.85vw,1.5vh),12px);letter-spacing:.22em;text-transform:uppercase;color:var(--amber);font-weight:700}
+h1{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+h1 em{font-style:normal;color:var(--teal)}
+.hero{display:flex;gap:var(--space-md);align-items:flex-end;flex-wrap:wrap}
+.hero .big{font-family:var(--serif);font-size:clamp(20px,min(4.6vw,8vh),64px);line-height:.92;font-variant-numeric:tabular-nums;color:#fff}
+.hero .sub{color:var(--muted);line-height:1.25}
+.hero .sub b{color:var(--teal);font-weight:700}
+
+/* kpis */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:var(--space-sm);flex:none}
+.card{min-width:0;min-height:0;padding:var(--space-md);border-radius:10px;
+  background:linear-gradient(150deg,rgba(255,255,255,.085),rgba(255,255,255,.02));
+  border:1px solid rgba(159,180,199,.22);border-left:5px solid var(--teal-d);
+  box-shadow:0 10px 22px rgba(0,0,0,.35);overflow-wrap:break-word}
+.card:nth-child(2){border-left-color:var(--amber)}
+.card .k{font-size:clamp(8px,min(.85vw,1.5vh),12px);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.card .v{font-family:var(--serif);font-size:clamp(15px,min(2.5vw,4.4vh),36px);line-height:1.05;font-variant-numeric:tabular-nums;color:#fff;margin-top:2px}
+.card .n{color:var(--muted);line-height:1.25}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:var(--space-md);flex:1;min-height:0;align-items:stretch}
+.panel{min-width:0;min-height:0;padding:var(--space-md);border-radius:12px;
+  background:rgba(255,255,255,.045);border:1px solid rgba(159,180,199,.2);
+  display:flex;flex-direction:column;gap:var(--space-sm)}
+.ptitle{font-size:clamp(11px,min(1.5vw,2.6vh),20px);font-weight:700;color:#fff;letter-spacing:.01em}
+.ptitle span{color:var(--muted);font-weight:500;font-size:.72em}
+
+.controls{display:flex;flex-wrap:wrap;gap:var(--space-xs)}
+button{font-family:var(--sans);cursor:pointer;color:var(--paper);background:rgba(255,255,255,.07);
+  border:1px solid rgba(159,180,199,.38);border-radius:999px;
+  padding:.35em .95em;font-weight:600;transition:background .18s,color .18s,border-color .18s}
+button:hover{background:rgba(56,182,217,.25);border-color:var(--teal)}
+button[aria-checked="true"],button[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#160800}
+button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+
+.chartwrap{flex:1;min-height:clamp(90px,26vh,260px)}
+svg{display:block;max-width:100%;height:auto}
+.bars{width:100%;height:100%}
+.bl{fill:#EAF2F8;font-size:13px;font-family:var(--sans)}
+.bv{fill:var(--teal);font-size:13px;font-weight:700;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.brect{transition:opacity .2s}
+.brect:hover{opacity:.75}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:.3em .35em;border-bottom:1px solid rgba(159,180,199,.18)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--muted);font-size:clamp(8px,min(.85vw,1.5vh),12px);letter-spacing:.1em;text-transform:uppercase}
+tbody td{color:#EAF2F8}
+tbody tr.top td{color:#fff;font-weight:700}
+.foot{flex:none;color:var(--muted);display:flex;justify-content:space-between;gap:var(--space-sm);flex-wrap:wrap}
+@media (max-width:800px),(max-aspect-ratio:4/3){.layout{grid-template-columns:1fr}}
+@media (max-height:600px){
+  .page,.panel,.card{padding:var(--space-sm)}
+  .layout,.panel,.controls,.cards{gap:var(--space-sm)}
+  body{line-height:1.2}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (forced-colors:active){
+  .page,.panel,.card,.viewport{forced-color-adjust:none;background:Canvas;color:CanvasText;border-color:CanvasText}
+  h1,h1 em,.hero .big,.card .v,.ptitle,tbody td,tbody tr.top td,.hero .sub,.hero .sub b,.card .k,.card .n,.eyebrow,.foot,thead th{forced-color-adjust:none;color:CanvasText}
+  button{forced-color-adjust:none;background:ButtonFace;color:ButtonText;border:1px solid ButtonText}
+  button[aria-checked="true"],button[aria-pressed="true"]{forced-color-adjust:none;background:Highlight;color:HighlightText;border-color:HighlightText}
+  button:focus-visible{outline:3px solid Highlight}
+}
+</style>
+</head>
+<body>
+<div class="viewport">
+<main class="page">
+
+  <header class="head" role="group" aria-label="Report header">
+    <div>
+      <div class="eyebrow">FY26 · Jan–Aug · 100 orders</div>
+      <h1>Sales <em>Performance</em> Explorer</h1>
+    </div>
+    <div class="hero">
+      <div class="big">₹2.77<span style="font-size:.5em"> Cr</span></div>
+      <div class="sub">total revenue<br><b>68.1%</b> blended margin</div>
+    </div>
+  </header>
+
+  <section class="cards" role="group" aria-label="Key metrics">
+    <div class="card"><div class="k">Gross Profit</div><div class="v">₹1.89 Cr</div><div class="n">across 697 units sold</div></div>
+    <div class="card"><div class="k">Best Month</div><div class="v">April</div><div class="n">₹0.57 Cr · 20% of the period</div></div>
+    <div class="card"><div class="k">Top Category</div><div class="v">Software</div><div class="n">₹1.33 Cr · 77.7% margin</div></div>
+    <div class="card"><div class="k">Avg Order</div><div class="v">₹2.77 L</div><div class="n">7.0 units per order</div></div>
+  </section>
+
+  <div class="layout">
+    <section class="panel" role="group" aria-labelledby="pt1">
+      <div class="ptitle" id="pt1">Revenue by <span id="dimName">country</span></div>
+      <div class="controls" role="radiogroup" aria-label="Choose breakdown dimension" id="dims"></div>
+      <div class="controls" role="group" aria-label="Choose measure" id="measures"></div>
+      <div class="chartwrap"><svg class="bars" id="bars" role="img" aria-label="Bar chart of the selected measure by the selected dimension" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </section>
+
+    <section class="panel" role="group" aria-labelledby="pt2">
+      <div class="ptitle" id="pt2">Monthly trend <span>revenue &amp; profit, ₹ crore</span></div>
+      <div class="chartwrap" style="min-height:clamp(70px,18vh,180px)">
+        <svg id="trend" role="img" preserveAspectRatio="none" viewBox="0 0 400 140" style="width:100%;height:100%"
+          aria-label="Line chart of monthly revenue and profit from January to August. Revenue peaks at 0.57 crore in April and dips to 0.21 crore in May; profit tracks revenue closely at roughly two-thirds of its value."></svg>
+      </div>
+      <div class="ptitle" style="margin-top:.2em">Leaderboard <span>top sellers</span></div>
+      <table>
+        <caption class="caption" style="text-align:left;color:var(--muted);padding-bottom:.2em">Revenue and margin by salesperson</caption>
+        <thead><tr><th scope="col">Salesperson</th><th scope="col">Revenue</th><th scope="col">Margin</th></tr></thead>
+        <tbody id="lb"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="foot caption">
+    <span>Direct ₹1.03 Cr · Partner ₹0.88 Cr · Online ₹0.86 Cr</span>
+    <span>Source: Sample_Sales_Data_100_Rows.xlsx · 100 orders, 4 countries</span>
+  </div>
+
+</main>
+</div>
+
+<script>
+const DATA={
+ Country:{"United States":[8441425,5763705,207],"Japan":[8226040,5557305,204],"South Africa":[6523835,4315825,202],"United Arab Emirates":[4535500,3249545,84]},
+ Category:{"Software":[13254360,10301600,254],"Electronics":[9390780,5842300,203],"Furniture":[5081660,2742480,240]},
+ Channel:{"Direct":[10336115,6938695,254],"Partner":[8772910,6045355,244],"Online":[8617775,5902330,199]},
+ Product:{"Laptop Pro":[6209280,3981600,91],"Analytics Suite":[6031600,4830040,93],"Security Pack":[4310240,3222560,103],"CRM Annual":[2912520,2249000,58],"Standing Desk":[2505600,1404800,80],"Office Chair":[1723460,907610,98],"Tablet Air":[1613100,977740,44],"Monitor 27":[1568400,882960,68],"Storage Cabinet":[852600,430070,62]},
+ Salesperson:{"Priyanka":[5261080,3666820,109],"Mohamed":[4299130,2946590,112],"Jackie":[4142295,2817115,95],"Queen":[3952080,2835280,68],"Nelson":[3418075,2305840,107],"Lupita":[3105760,2009985,95],"Lionel":[2964960,1890485,95],"Serena":[583420,414265,16]}
+};
+const MONTHS=[["Jan",4515220,3146230],["Feb",2345500,1622425],["Mar",3735455,2505115],["Apr",5675865,4065115],["May",2089970,1319000],["Jun",4736640,3190680],["Jul",2514050,1663365],["Aug",2114100,1374450]];
+const MEAS=[["Revenue",0],["Profit",1],["Units",2]];
+let dim="Country", mi=0;
+
+const fmtCr=v=>"₹"+(v/1e7).toFixed(2)+" Cr";
+const fmtV=v=>mi===2?v+" units":fmtCr(v);
+
+function mkBtn(label,group,sel,onClick,i,n){
+  const b=document.createElement("button");
+  b.textContent=label; b.setAttribute("role","radio");
+  b.setAttribute("aria-checked",sel?"true":"false");
+  b.setAttribute("aria-posinset",i+1); b.setAttribute("aria-setsize",n);
+  b.addEventListener("click",onClick); group.appendChild(b); return b;
+}
+const dimsEl=document.getElementById("dims"), measEl=document.getElementById("measures");
+const dimKeys=Object.keys(DATA);
+function buildControls(){
+  dimsEl.textContent=""; measEl.textContent="";
+  dimKeys.forEach((k,i)=>mkBtn(k,dimsEl,k===dim,()=>{dim=k;render();},i,dimKeys.length));
+  MEAS.forEach((m,i)=>mkBtn(m[0],measEl,i===mi,()=>{mi=i;render();},i,MEAS.length));
+}
+measEl.setAttribute("role","radiogroup");
+
+function drawBars(){
+  const svg=document.getElementById("bars");
+  const entries=Object.entries(DATA[dim]).sort((a,b)=>b[1][mi]-a[1][mi]);
+  const n=entries.length, rowH=34, gap=9, W=560, labW=168, valW=112;
+  const H=n*rowH+(n-1)*gap;
+  const max=Math.max(...entries.map(e=>e[1][mi]));
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+  let s="";
+  entries.forEach((e,i)=>{
+    const y=i*(rowH+gap), w=Math.max(3,(W-labW-valW)*e[1][mi]/max);
+    const c=i===0?"#E97132":"#38b6d9", op=i===0?1:(0.92-i*0.075);
+    s+=`<text class="bl" x="0" y="${y+rowH*0.68}">${e[0]}</text>`
+      +`<rect class="brect" x="${labW}" y="${y+5}" width="${w}" height="${rowH-10}" rx="4" fill="${c}" opacity="${op}"><title>${e[0]}: ${fmtV(e[1][mi])}</title></rect>`
+      +`<text class="bv" x="${labW+w+8}" y="${y+rowH*0.68}" fill="${i===0?'#E97132':'#EAF2F8'}">${fmtV(e[1][mi])}</text>`;
+  });
+  svg.innerHTML=s;
+  svg.setAttribute("aria-label",`Bar chart: ${MEAS[mi][0]} by ${dim}. Leader ${entries[0][0]} at ${fmtV(entries[0][1][mi])}; lowest ${entries[n-1][0]} at ${fmtV(entries[n-1][1][mi])}.`);
+}
+
+function drawTrend(){
+  const svg=document.getElementById("trend");
+  const W=400,H=140,pad=22, max=6e6;
+  const x=i=>pad+i*(W-pad*2)/(MONTHS.length-1);
+  const y=v=>H-26-(v/max)*(H-48);
+  const line=k=>MONTHS.map((m,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(m[k]).toFixed(1)}`).join(" ");
+  const area=line(1)+` L${x(MONTHS.length-1).toFixed(1)},${H-26} L${x(0)},${H-26} Z`;
+  let s=`<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#38b6d9" stop-opacity=".55"/><stop offset="100%" stop-color="#38b6d9" stop-opacity="0"/></linearGradient></defs>`;
+  s+=`<path d="${area}" fill="url(#g1)"/>`;
+  s+=`<path d="${line(1)}" fill="none" stroke="#38b6d9" stroke-width="2.4"/>`;
+  s+=`<path d="${line(2)}" fill="none" stroke="#E97132" stroke-width="2.2" stroke-dasharray="6 4"/>`;
+  MONTHS.forEach((m,i)=>{
+    s+=`<circle cx="${x(i).toFixed(1)}" cy="${y(m[1]).toFixed(1)}" r="2.8" fill="#38b6d9"/>`;
+    s+=`<text x="${x(i).toFixed(1)}" y="${H-10}" fill="#9FB4C7" font-size="9" text-anchor="middle" font-family="Segoe UI,sans-serif">${m[0]}</text>`;
+  });
+  s+=`<text x="${x(3).toFixed(1)}" y="${(y(MONTHS[3][1])-7).toFixed(1)}" fill="#38b6d9" font-size="10" font-weight="700" text-anchor="middle" font-family="Segoe UI,sans-serif">Revenue ₹0.57 Cr</text>`;
+  s+=`<text x="${x(5).toFixed(1)}" y="${(y(MONTHS[5][2])+14).toFixed(1)}" fill="#E97132" font-size="10" font-weight="700" text-anchor="middle" font-family="Segoe UI,sans-serif">Profit</text>`;
+  svg.innerHTML=s;
+}
+
+function drawBoard(){
+  const tb=document.getElementById("lb");
+  const rows=Object.entries(DATA.Salesperson).sort((a,b)=>b[1][0]-a[1][0]).slice(0,5);
+  tb.textContent="";
+  rows.forEach((r,i)=>{
+    const tr=document.createElement("tr"); if(i===0)tr.className="top";
+    const th=document.createElement("th"); th.scope="row"; th.textContent=r[0];
+    th.style.textAlign="left"; th.style.color=i===0?"#fff":"#EAF2F8"; th.style.fontWeight=i===0?"700":"500";
+    const t1=document.createElement("td"); t1.textContent=fmtCr(r[1][0]);
+    const t2=document.createElement("td"); t2.textContent=(r[1][1]/r[1][0]*100).toFixed(1)+"%";
+    tr.append(th,t1,t2); tb.appendChild(tr);
+  });
+}
+
+function render(){
+  document.getElementById("dimName").textContent=dim.toLowerCase();
+  document.getElementById("pt1").firstChild.nodeValue=MEAS[mi][0]+" by ";
+  buildControls(); drawBars(); scheduleFit();
+}
+
+/* fit */
+const viewport=document.querySelector(".viewport"), page=document.querySelector(".page");
+function contentHeight(){
+  const pageTop=page.getBoundingClientRect().top;
+  let bottom=pageTop+page.scrollHeight;
+  page.querySelectorAll("*").forEach(el=>{bottom=Math.max(bottom,el.getBoundingClientRect().bottom);});
+  return bottom-pageTop;
+}
+function fitPage(){
+  const vw=viewport.clientWidth, vh=viewport.clientHeight;
+  page.style.transform="none"; page.style.width=vw+"px";
+  if(contentHeight()<=vh){page.style.width="100%";return;}
+  let low=.2,high=1;
+  for(let i=0;i<12;i++){const s=(low+high)/2;page.style.width=(vw/s)+"px";
+    if(contentHeight()*s<=vh){low=s}else{high=s}}
+  page.style.width=(vw/low)+"px"; page.style.transform="scale("+low+")";
+}
+let ff; function scheduleFit(){cancelAnimationFrame(ff);ff=requestAnimationFrame(fitPage);}
+new ResizeObserver(scheduleFit).observe(viewport);
+window.addEventListener("load",scheduleFit);
+window.addEventListener("resize",scheduleFit);
+document.fonts?.ready.then(scheduleFit);
+
+drawTrend(); drawBoard(); render();
+</script>
+</body>
+</html>

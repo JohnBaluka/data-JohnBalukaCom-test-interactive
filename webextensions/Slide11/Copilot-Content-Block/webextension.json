@@ -1,0 +1,17 @@
+{
+  "kind": "copilot-interactive-slide",
+  "name": "Copilot Content Block",
+  "title": "Session feedback",
+  "description": "",
+  "slide": 11,
+  "deckSlide": 11,
+  "shapeId": 3,
+  "frame": {
+    "left": 0,
+    "top": 0,
+    "width": 1,
+    "height": 1
+  },
+  "page": "index.html",
+  "snapshot": "snapshot.png"
+}
